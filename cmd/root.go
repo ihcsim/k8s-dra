@@ -10,6 +10,7 @@ import (
 
 	"github.com/ihcsim/k8s-dra/cmd/flags"
 	"github.com/ihcsim/k8s-dra/pkg/drivers/gpu"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	zlog "github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -66,7 +67,15 @@ func run(ctx context.Context) error {
 		s := http.NewServeMux()
 		s.HandleFunc(fmt.Sprintf("%s", pprofPath), pprof.Index)
 		if err := http.ListenAndServe(fmt.Sprintf(":%d", pprofPort), s); err != nil {
-			log.Fatal().Err(err).Msg("failed to start pprof server")
+			log.Warn().Err(err).Msg("failed to start pprof server")
+		}
+	}()
+
+	go func() {
+		s := http.NewServeMux()
+		s.Handle(fmt.Sprintf("/%s", metricsPath), promhttp.Handler())
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", metricsPort), s); err != nil {
+			log.Warn().Err(err).Msg("failed to start metrics server")
 		}
 	}()
 
