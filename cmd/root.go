@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/pprof"
 	"os"
 	"time"
 
@@ -55,10 +57,18 @@ func run(ctx context.Context) error {
 		metricsPort = viper.GetInt("metrics-port")
 		metricsPath = viper.GetString("metrics-path")
 		pprofPort   = viper.GetInt("pprof-port")
-		pprofPath   = viper.GetString("pprof-path")
+		pprofPath   = "/debug/pprof/"
 
 		driver = gpu.NewDriver()
 	)
+
+	go func() {
+		s := http.NewServeMux()
+		s.HandleFunc(fmt.Sprintf("%s", pprofPath), pprof.Index)
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", pprofPort), s); err != nil {
+			log.Fatal().Err(err).Msg("failed to start pprof server")
+		}
+	}()
 
 	log.Info().Str("driver", driver.GetName()).Msg("starting driver controller")
 	log.Info().
@@ -66,7 +76,7 @@ func run(ctx context.Context) error {
 		Float64("qps", qps).
 		Float64("burst", burst).
 		Str("metrics", fmt.Sprintf("/%s:%d", metricsPath, metricsPort)).
-		Str("pprof", fmt.Sprintf("/%s:%d", pprofPath, pprofPort)).
+		Str("pprof", fmt.Sprintf("%s:%d", pprofPath, pprofPort)).
 		Send()
 
 	coreClientSets, err := coreClientSets(kubeconfig)

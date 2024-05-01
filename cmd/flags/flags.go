@@ -18,7 +18,6 @@ func NewControllerFlags() *pflag.FlagSet {
 	flags.Int("workers", 3, "Number of workers the controller spawns")
 	flags.Int("metrics-port", 9001, "HTTP port to expose metrics")
 	flags.String("metrics-path", "metrics", "HTTP path to expose metrics")
-	flags.Int("pprof-port", 9011, "HTTP port to expose pprof endpoints")
-	flags.String("pprof-path", "pprof", "HTTP path to expose pprof endpoints")
+	flags.Int("pprof-port", 9002, "HTTP port to expose pprof endpoints")
 	return flags
 }
