@@ -22,13 +22,12 @@ func NewDriver() *driver {
 
 // GetName returns the name of the driver.
 func (d *driver) GetName() string {
-	return "gpudrv.ihcsim.github.com"
+	return "driver.gpu.ihcsim"
 }
 
 // see https://pkg.go.dev/k8s.io/dynamic-resource-allocation/controller#Driver
 func (d *driver) GetClassParameters(ctx context.Context, class *resourcev1alpha2.ResourceClass) (interface{}, error) {
 	return nil, nil
-
 }
 
 // see https://pkg.go.dev/k8s.io/dynamic-resource-allocation/controller#Driver
