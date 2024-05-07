@@ -21,15 +21,13 @@ tidy:
 codegen:
 	source ./hack/kube-codegen.sh && \
 	kube::codegen::gen_helpers --boilerplate $(BOILERPLATE_FILE) $(API_ROOT_DIR) && \
-	kube::codegen::gen_openapi  \
-		--boilerplate $(BOILERPLATE_FILE) \
+	kube::codegen::gen_openapi --boilerplate $(BOILERPLATE_FILE) \
 		--output-dir $(API_ROOT_DIR) \
 		--output-pkg $(GPU_OPENAPI_GO_PKG) \
 		--report-filename $(API_ROOT_DIR)/openapi-report.txt \
 		--update-report \
 		$(API_ROOT_DIR) && \
-	kube::codegen::gen_client \
-		--boilerplate $(BOILERPLATE_FILE) \
+	kube::codegen::gen_client --boilerplate $(BOILERPLATE_FILE) \
 		--output-dir $(API_ROOT_DIR) \
 		--output-pkg $(GPU_API_GO_PKG) \
 		--with-applyconfig \
