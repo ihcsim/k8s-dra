@@ -33,3 +33,14 @@ codegen:
 		--with-applyconfig \
 		--with-watch \
 		$(API_ROOT_DIR)
+
+codegen-verify:
+	@srcdir=$$(pwd) && \
+	tmpdir=$$(mktemp -d -t k8s-dra.XXXXXX ) && \
+	cp -a . $${tmpdir} && \
+	pushd $${tmpdir} && \
+	$(MAKE) -s codegen && \
+	diff -Naupr "$${srcdir}" "$${tmpdir}" || ret="$$?" && \
+	rm -rf $${tmpdir} && \
+	echo "Removed temporary diff folder at $${tmpdir}." && \
+	[[ $${ret} -eq 0 ]] || { echo "CRD APIs is outdated. Please run 'make codegen'."; exit 1; }
