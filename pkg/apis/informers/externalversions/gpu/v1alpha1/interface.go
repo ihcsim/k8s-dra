@@ -24,10 +24,10 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// DeviceClassParameterses returns a DeviceClassParametersInformer.
-	DeviceClassParameterses() DeviceClassParametersInformer
-	// ResourceClaimParameterses returns a ResourceClaimParametersInformer.
-	ResourceClaimParameterses() ResourceClaimParametersInformer
+	// DeviceClassParameters returns a DeviceClassParametersInformer.
+	DeviceClassParameters() DeviceClassParametersInformer
+	// ResourceClaimParameters returns a ResourceClaimParametersInformer.
+	ResourceClaimParameters() ResourceClaimParametersInformer
 }
 
 type version struct {
@@ -41,12 +41,12 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// DeviceClassParameterses returns a DeviceClassParametersInformer.
-func (v *version) DeviceClassParameterses() DeviceClassParametersInformer {
+// DeviceClassParameters returns a DeviceClassParametersInformer.
+func (v *version) DeviceClassParameters() DeviceClassParametersInformer {
 	return &deviceClassParametersInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
-// ResourceClaimParameterses returns a ResourceClaimParametersInformer.
-func (v *version) ResourceClaimParameterses() ResourceClaimParametersInformer {
+// ResourceClaimParameters returns a ResourceClaimParametersInformer.
+func (v *version) ResourceClaimParameters() ResourceClaimParametersInformer {
 	return &resourceClaimParametersInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

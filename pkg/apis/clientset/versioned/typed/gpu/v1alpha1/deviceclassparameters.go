@@ -33,10 +33,10 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-// DeviceClassParametersesGetter has a method to return a DeviceClassParametersInterface.
+// DeviceClassParametersGetter has a method to return a DeviceClassParametersInterface.
 // A group's client should implement this interface.
-type DeviceClassParametersesGetter interface {
-	DeviceClassParameterses() DeviceClassParametersInterface
+type DeviceClassParametersGetter interface {
+	DeviceClassParameters() DeviceClassParametersInterface
 }
 
 // DeviceClassParametersInterface has methods to work with DeviceClassParameters resources.
@@ -53,23 +53,23 @@ type DeviceClassParametersInterface interface {
 	DeviceClassParametersExpansion
 }
 
-// deviceClassParameterses implements DeviceClassParametersInterface
-type deviceClassParameterses struct {
+// deviceClassParameters implements DeviceClassParametersInterface
+type deviceClassParameters struct {
 	client rest.Interface
 }
 
-// newDeviceClassParameterses returns a DeviceClassParameterses
-func newDeviceClassParameterses(c *GpuV1alpha1Client) *deviceClassParameterses {
-	return &deviceClassParameterses{
+// newDeviceClassParameters returns a DeviceClassParameters
+func newDeviceClassParameters(c *GpuV1alpha1Client) *deviceClassParameters {
+	return &deviceClassParameters{
 		client: c.RESTClient(),
 	}
 }
 
 // Get takes name of the deviceClassParameters, and returns the corresponding deviceClassParameters object, and an error if there is any.
-func (c *deviceClassParameterses) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.DeviceClassParameters, err error) {
+func (c *deviceClassParameters) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.DeviceClassParameters, err error) {
 	result = &v1alpha1.DeviceClassParameters{}
 	err = c.client.Get().
-		Resource("deviceclassparameterses").
+		Resource("deviceclassparameters").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
 		Do(ctx).
@@ -77,15 +77,15 @@ func (c *deviceClassParameterses) Get(ctx context.Context, name string, options 
 	return
 }
 
-// List takes label and field selectors, and returns the list of DeviceClassParameterses that match those selectors.
-func (c *deviceClassParameterses) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.DeviceClassParametersList, err error) {
+// List takes label and field selectors, and returns the list of DeviceClassParameters that match those selectors.
+func (c *deviceClassParameters) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.DeviceClassParametersList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
 	}
 	result = &v1alpha1.DeviceClassParametersList{}
 	err = c.client.Get().
-		Resource("deviceclassparameterses").
+		Resource("deviceclassparameters").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Do(ctx).
@@ -93,25 +93,25 @@ func (c *deviceClassParameterses) List(ctx context.Context, opts v1.ListOptions)
 	return
 }
 
-// Watch returns a watch.Interface that watches the requested deviceClassParameterses.
-func (c *deviceClassParameterses) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
+// Watch returns a watch.Interface that watches the requested deviceClassParameters.
+func (c *deviceClassParameters) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
 	}
 	opts.Watch = true
 	return c.client.Get().
-		Resource("deviceclassparameterses").
+		Resource("deviceclassparameters").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Watch(ctx)
 }
 
 // Create takes the representation of a deviceClassParameters and creates it.  Returns the server's representation of the deviceClassParameters, and an error, if there is any.
-func (c *deviceClassParameterses) Create(ctx context.Context, deviceClassParameters *v1alpha1.DeviceClassParameters, opts v1.CreateOptions) (result *v1alpha1.DeviceClassParameters, err error) {
+func (c *deviceClassParameters) Create(ctx context.Context, deviceClassParameters *v1alpha1.DeviceClassParameters, opts v1.CreateOptions) (result *v1alpha1.DeviceClassParameters, err error) {
 	result = &v1alpha1.DeviceClassParameters{}
 	err = c.client.Post().
-		Resource("deviceclassparameterses").
+		Resource("deviceclassparameters").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(deviceClassParameters).
 		Do(ctx).
@@ -120,10 +120,10 @@ func (c *deviceClassParameterses) Create(ctx context.Context, deviceClassParamet
 }
 
 // Update takes the representation of a deviceClassParameters and updates it. Returns the server's representation of the deviceClassParameters, and an error, if there is any.
-func (c *deviceClassParameterses) Update(ctx context.Context, deviceClassParameters *v1alpha1.DeviceClassParameters, opts v1.UpdateOptions) (result *v1alpha1.DeviceClassParameters, err error) {
+func (c *deviceClassParameters) Update(ctx context.Context, deviceClassParameters *v1alpha1.DeviceClassParameters, opts v1.UpdateOptions) (result *v1alpha1.DeviceClassParameters, err error) {
 	result = &v1alpha1.DeviceClassParameters{}
 	err = c.client.Put().
-		Resource("deviceclassparameterses").
+		Resource("deviceclassparameters").
 		Name(deviceClassParameters.Name).
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(deviceClassParameters).
@@ -133,9 +133,9 @@ func (c *deviceClassParameterses) Update(ctx context.Context, deviceClassParamet
 }
 
 // Delete takes name of the deviceClassParameters and deletes it. Returns an error if one occurs.
-func (c *deviceClassParameterses) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
+func (c *deviceClassParameters) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
-		Resource("deviceclassparameterses").
+		Resource("deviceclassparameters").
 		Name(name).
 		Body(&opts).
 		Do(ctx).
@@ -143,13 +143,13 @@ func (c *deviceClassParameterses) Delete(ctx context.Context, name string, opts 
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *deviceClassParameterses) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+func (c *deviceClassParameters) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
 	if listOpts.TimeoutSeconds != nil {
 		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
-		Resource("deviceclassparameterses").
+		Resource("deviceclassparameters").
 		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Body(&opts).
@@ -158,10 +158,10 @@ func (c *deviceClassParameterses) DeleteCollection(ctx context.Context, opts v1.
 }
 
 // Patch applies the patch and returns the patched deviceClassParameters.
-func (c *deviceClassParameterses) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.DeviceClassParameters, err error) {
+func (c *deviceClassParameters) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.DeviceClassParameters, err error) {
 	result = &v1alpha1.DeviceClassParameters{}
 	err = c.client.Patch(pt).
-		Resource("deviceclassparameterses").
+		Resource("deviceclassparameters").
 		Name(name).
 		SubResource(subresources...).
 		VersionedParams(&opts, scheme.ParameterCodec).
@@ -172,7 +172,7 @@ func (c *deviceClassParameterses) Patch(ctx context.Context, name string, pt typ
 }
 
 // Apply takes the given apply declarative configuration, applies it and returns the applied deviceClassParameters.
-func (c *deviceClassParameterses) Apply(ctx context.Context, deviceClassParameters *gpuv1alpha1.DeviceClassParametersApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.DeviceClassParameters, err error) {
+func (c *deviceClassParameters) Apply(ctx context.Context, deviceClassParameters *gpuv1alpha1.DeviceClassParametersApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.DeviceClassParameters, err error) {
 	if deviceClassParameters == nil {
 		return nil, fmt.Errorf("deviceClassParameters provided to Apply must not be nil")
 	}
@@ -187,7 +187,7 @@ func (c *deviceClassParameterses) Apply(ctx context.Context, deviceClassParamete
 	}
 	result = &v1alpha1.DeviceClassParameters{}
 	err = c.client.Patch(types.ApplyPatchType).
-		Resource("deviceclassparameterses").
+		Resource("deviceclassparameters").
 		Name(*name).
 		VersionedParams(&patchOpts, scheme.ParameterCodec).
 		Body(data).

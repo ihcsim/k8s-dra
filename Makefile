@@ -32,6 +32,7 @@ codegen:
 		--output-pkg $(GPU_API_GO_PKG) \
 		--with-applyconfig \
 		--with-watch \
+		--plural-exceptions "DeviceClassParameters:DeviceClassParameters,ResourceClaimParameters:ResourceClaimParameters" \
 		$(API_ROOT_DIR)
 
 codegen-verify:

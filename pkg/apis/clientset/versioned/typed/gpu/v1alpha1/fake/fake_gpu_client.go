@@ -28,12 +28,12 @@ type FakeGpuV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeGpuV1alpha1) DeviceClassParameterses() v1alpha1.DeviceClassParametersInterface {
-	return &FakeDeviceClassParameterses{c}
+func (c *FakeGpuV1alpha1) DeviceClassParameters() v1alpha1.DeviceClassParametersInterface {
+	return &FakeDeviceClassParameters{c}
 }
 
-func (c *FakeGpuV1alpha1) ResourceClaimParameterses(namespace string) v1alpha1.ResourceClaimParametersInterface {
-	return &FakeResourceClaimParameterses{c, namespace}
+func (c *FakeGpuV1alpha1) ResourceClaimParameters(namespace string) v1alpha1.ResourceClaimParametersInterface {
+	return &FakeResourceClaimParameters{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

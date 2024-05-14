@@ -33,10 +33,10 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-// ResourceClaimParametersesGetter has a method to return a ResourceClaimParametersInterface.
+// ResourceClaimParametersGetter has a method to return a ResourceClaimParametersInterface.
 // A group's client should implement this interface.
-type ResourceClaimParametersesGetter interface {
-	ResourceClaimParameterses(namespace string) ResourceClaimParametersInterface
+type ResourceClaimParametersGetter interface {
+	ResourceClaimParameters(namespace string) ResourceClaimParametersInterface
 }
 
 // ResourceClaimParametersInterface has methods to work with ResourceClaimParameters resources.
@@ -53,26 +53,26 @@ type ResourceClaimParametersInterface interface {
 	ResourceClaimParametersExpansion
 }
 
-// resourceClaimParameterses implements ResourceClaimParametersInterface
-type resourceClaimParameterses struct {
+// resourceClaimParameters implements ResourceClaimParametersInterface
+type resourceClaimParameters struct {
 	client rest.Interface
 	ns     string
 }
 
-// newResourceClaimParameterses returns a ResourceClaimParameterses
-func newResourceClaimParameterses(c *GpuV1alpha1Client, namespace string) *resourceClaimParameterses {
-	return &resourceClaimParameterses{
+// newResourceClaimParameters returns a ResourceClaimParameters
+func newResourceClaimParameters(c *GpuV1alpha1Client, namespace string) *resourceClaimParameters {
+	return &resourceClaimParameters{
 		client: c.RESTClient(),
 		ns:     namespace,
 	}
 }
 
 // Get takes name of the resourceClaimParameters, and returns the corresponding resourceClaimParameters object, and an error if there is any.
-func (c *resourceClaimParameterses) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
+func (c *resourceClaimParameters) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
 	result = &v1alpha1.ResourceClaimParameters{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("resourceclaimparameterses").
+		Resource("resourceclaimparameters").
 		Name(name).
 		VersionedParams(&options, scheme.ParameterCodec).
 		Do(ctx).
@@ -80,8 +80,8 @@ func (c *resourceClaimParameterses) Get(ctx context.Context, name string, option
 	return
 }
 
-// List takes label and field selectors, and returns the list of ResourceClaimParameterses that match those selectors.
-func (c *resourceClaimParameterses) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.ResourceClaimParametersList, err error) {
+// List takes label and field selectors, and returns the list of ResourceClaimParameters that match those selectors.
+func (c *resourceClaimParameters) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.ResourceClaimParametersList, err error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -89,7 +89,7 @@ func (c *resourceClaimParameterses) List(ctx context.Context, opts v1.ListOption
 	result = &v1alpha1.ResourceClaimParametersList{}
 	err = c.client.Get().
 		Namespace(c.ns).
-		Resource("resourceclaimparameterses").
+		Resource("resourceclaimparameters").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Do(ctx).
@@ -97,8 +97,8 @@ func (c *resourceClaimParameterses) List(ctx context.Context, opts v1.ListOption
 	return
 }
 
-// Watch returns a watch.Interface that watches the requested resourceClaimParameterses.
-func (c *resourceClaimParameterses) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
+// Watch returns a watch.Interface that watches the requested resourceClaimParameters.
+func (c *resourceClaimParameters) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	var timeout time.Duration
 	if opts.TimeoutSeconds != nil {
 		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
@@ -106,18 +106,18 @@ func (c *resourceClaimParameterses) Watch(ctx context.Context, opts v1.ListOptio
 	opts.Watch = true
 	return c.client.Get().
 		Namespace(c.ns).
-		Resource("resourceclaimparameterses").
+		Resource("resourceclaimparameters").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Watch(ctx)
 }
 
 // Create takes the representation of a resourceClaimParameters and creates it.  Returns the server's representation of the resourceClaimParameters, and an error, if there is any.
-func (c *resourceClaimParameterses) Create(ctx context.Context, resourceClaimParameters *v1alpha1.ResourceClaimParameters, opts v1.CreateOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
+func (c *resourceClaimParameters) Create(ctx context.Context, resourceClaimParameters *v1alpha1.ResourceClaimParameters, opts v1.CreateOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
 	result = &v1alpha1.ResourceClaimParameters{}
 	err = c.client.Post().
 		Namespace(c.ns).
-		Resource("resourceclaimparameterses").
+		Resource("resourceclaimparameters").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(resourceClaimParameters).
 		Do(ctx).
@@ -126,11 +126,11 @@ func (c *resourceClaimParameterses) Create(ctx context.Context, resourceClaimPar
 }
 
 // Update takes the representation of a resourceClaimParameters and updates it. Returns the server's representation of the resourceClaimParameters, and an error, if there is any.
-func (c *resourceClaimParameterses) Update(ctx context.Context, resourceClaimParameters *v1alpha1.ResourceClaimParameters, opts v1.UpdateOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
+func (c *resourceClaimParameters) Update(ctx context.Context, resourceClaimParameters *v1alpha1.ResourceClaimParameters, opts v1.UpdateOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
 	result = &v1alpha1.ResourceClaimParameters{}
 	err = c.client.Put().
 		Namespace(c.ns).
-		Resource("resourceclaimparameterses").
+		Resource("resourceclaimparameters").
 		Name(resourceClaimParameters.Name).
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(resourceClaimParameters).
@@ -140,10 +140,10 @@ func (c *resourceClaimParameterses) Update(ctx context.Context, resourceClaimPar
 }
 
 // Delete takes name of the resourceClaimParameters and deletes it. Returns an error if one occurs.
-func (c *resourceClaimParameterses) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
+func (c *resourceClaimParameters) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
 		Namespace(c.ns).
-		Resource("resourceclaimparameterses").
+		Resource("resourceclaimparameters").
 		Name(name).
 		Body(&opts).
 		Do(ctx).
@@ -151,14 +151,14 @@ func (c *resourceClaimParameterses) Delete(ctx context.Context, name string, opt
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *resourceClaimParameterses) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+func (c *resourceClaimParameters) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
 	var timeout time.Duration
 	if listOpts.TimeoutSeconds != nil {
 		timeout = time.Duration(*listOpts.TimeoutSeconds) * time.Second
 	}
 	return c.client.Delete().
 		Namespace(c.ns).
-		Resource("resourceclaimparameterses").
+		Resource("resourceclaimparameters").
 		VersionedParams(&listOpts, scheme.ParameterCodec).
 		Timeout(timeout).
 		Body(&opts).
@@ -167,11 +167,11 @@ func (c *resourceClaimParameterses) DeleteCollection(ctx context.Context, opts v
 }
 
 // Patch applies the patch and returns the patched resourceClaimParameters.
-func (c *resourceClaimParameterses) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.ResourceClaimParameters, err error) {
+func (c *resourceClaimParameters) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.ResourceClaimParameters, err error) {
 	result = &v1alpha1.ResourceClaimParameters{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
-		Resource("resourceclaimparameterses").
+		Resource("resourceclaimparameters").
 		Name(name).
 		SubResource(subresources...).
 		VersionedParams(&opts, scheme.ParameterCodec).
@@ -182,7 +182,7 @@ func (c *resourceClaimParameterses) Patch(ctx context.Context, name string, pt t
 }
 
 // Apply takes the given apply declarative configuration, applies it and returns the applied resourceClaimParameters.
-func (c *resourceClaimParameterses) Apply(ctx context.Context, resourceClaimParameters *gpuv1alpha1.ResourceClaimParametersApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
+func (c *resourceClaimParameters) Apply(ctx context.Context, resourceClaimParameters *gpuv1alpha1.ResourceClaimParametersApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
 	if resourceClaimParameters == nil {
 		return nil, fmt.Errorf("resourceClaimParameters provided to Apply must not be nil")
 	}
@@ -198,7 +198,7 @@ func (c *resourceClaimParameterses) Apply(ctx context.Context, resourceClaimPara
 	result = &v1alpha1.ResourceClaimParameters{}
 	err = c.client.Patch(types.ApplyPatchType).
 		Namespace(c.ns).
-		Resource("resourceclaimparameterses").
+		Resource("resourceclaimparameters").
 		Name(*name).
 		VersionedParams(&patchOpts, scheme.ParameterCodec).
 		Body(data).

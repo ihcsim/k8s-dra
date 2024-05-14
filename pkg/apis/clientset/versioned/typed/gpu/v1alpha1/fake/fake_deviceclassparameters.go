@@ -32,29 +32,29 @@ import (
 	testing "k8s.io/client-go/testing"
 )
 
-// FakeDeviceClassParameterses implements DeviceClassParametersInterface
-type FakeDeviceClassParameterses struct {
+// FakeDeviceClassParameters implements DeviceClassParametersInterface
+type FakeDeviceClassParameters struct {
 	Fake *FakeGpuV1alpha1
 }
 
-var deviceclassparametersesResource = v1alpha1.SchemeGroupVersion.WithResource("deviceclassparameterses")
+var deviceclassparametersResource = v1alpha1.SchemeGroupVersion.WithResource("deviceclassparameters")
 
-var deviceclassparametersesKind = v1alpha1.SchemeGroupVersion.WithKind("DeviceClassParameters")
+var deviceclassparametersKind = v1alpha1.SchemeGroupVersion.WithKind("DeviceClassParameters")
 
 // Get takes name of the deviceClassParameters, and returns the corresponding deviceClassParameters object, and an error if there is any.
-func (c *FakeDeviceClassParameterses) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.DeviceClassParameters, err error) {
+func (c *FakeDeviceClassParameters) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.DeviceClassParameters, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewRootGetAction(deviceclassparametersesResource, name), &v1alpha1.DeviceClassParameters{})
+		Invokes(testing.NewRootGetAction(deviceclassparametersResource, name), &v1alpha1.DeviceClassParameters{})
 	if obj == nil {
 		return nil, err
 	}
 	return obj.(*v1alpha1.DeviceClassParameters), err
 }
 
-// List takes label and field selectors, and returns the list of DeviceClassParameterses that match those selectors.
-func (c *FakeDeviceClassParameterses) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.DeviceClassParametersList, err error) {
+// List takes label and field selectors, and returns the list of DeviceClassParameters that match those selectors.
+func (c *FakeDeviceClassParameters) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.DeviceClassParametersList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewRootListAction(deviceclassparametersesResource, deviceclassparametersesKind, opts), &v1alpha1.DeviceClassParametersList{})
+		Invokes(testing.NewRootListAction(deviceclassparametersResource, deviceclassparametersKind, opts), &v1alpha1.DeviceClassParametersList{})
 	if obj == nil {
 		return nil, err
 	}
@@ -72,16 +72,16 @@ func (c *FakeDeviceClassParameterses) List(ctx context.Context, opts v1.ListOpti
 	return list, err
 }
 
-// Watch returns a watch.Interface that watches the requested deviceClassParameterses.
-func (c *FakeDeviceClassParameterses) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
+// Watch returns a watch.Interface that watches the requested deviceClassParameters.
+func (c *FakeDeviceClassParameters) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
-		InvokesWatch(testing.NewRootWatchAction(deviceclassparametersesResource, opts))
+		InvokesWatch(testing.NewRootWatchAction(deviceclassparametersResource, opts))
 }
 
 // Create takes the representation of a deviceClassParameters and creates it.  Returns the server's representation of the deviceClassParameters, and an error, if there is any.
-func (c *FakeDeviceClassParameterses) Create(ctx context.Context, deviceClassParameters *v1alpha1.DeviceClassParameters, opts v1.CreateOptions) (result *v1alpha1.DeviceClassParameters, err error) {
+func (c *FakeDeviceClassParameters) Create(ctx context.Context, deviceClassParameters *v1alpha1.DeviceClassParameters, opts v1.CreateOptions) (result *v1alpha1.DeviceClassParameters, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewRootCreateAction(deviceclassparametersesResource, deviceClassParameters), &v1alpha1.DeviceClassParameters{})
+		Invokes(testing.NewRootCreateAction(deviceclassparametersResource, deviceClassParameters), &v1alpha1.DeviceClassParameters{})
 	if obj == nil {
 		return nil, err
 	}
@@ -89,9 +89,9 @@ func (c *FakeDeviceClassParameterses) Create(ctx context.Context, deviceClassPar
 }
 
 // Update takes the representation of a deviceClassParameters and updates it. Returns the server's representation of the deviceClassParameters, and an error, if there is any.
-func (c *FakeDeviceClassParameterses) Update(ctx context.Context, deviceClassParameters *v1alpha1.DeviceClassParameters, opts v1.UpdateOptions) (result *v1alpha1.DeviceClassParameters, err error) {
+func (c *FakeDeviceClassParameters) Update(ctx context.Context, deviceClassParameters *v1alpha1.DeviceClassParameters, opts v1.UpdateOptions) (result *v1alpha1.DeviceClassParameters, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewRootUpdateAction(deviceclassparametersesResource, deviceClassParameters), &v1alpha1.DeviceClassParameters{})
+		Invokes(testing.NewRootUpdateAction(deviceclassparametersResource, deviceClassParameters), &v1alpha1.DeviceClassParameters{})
 	if obj == nil {
 		return nil, err
 	}
@@ -99,24 +99,24 @@ func (c *FakeDeviceClassParameterses) Update(ctx context.Context, deviceClassPar
 }
 
 // Delete takes name of the deviceClassParameters and deletes it. Returns an error if one occurs.
-func (c *FakeDeviceClassParameterses) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
+func (c *FakeDeviceClassParameters) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewRootDeleteActionWithOptions(deviceclassparametersesResource, name, opts), &v1alpha1.DeviceClassParameters{})
+		Invokes(testing.NewRootDeleteActionWithOptions(deviceclassparametersResource, name, opts), &v1alpha1.DeviceClassParameters{})
 	return err
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeDeviceClassParameterses) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewRootDeleteCollectionAction(deviceclassparametersesResource, listOpts)
+func (c *FakeDeviceClassParameters) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewRootDeleteCollectionAction(deviceclassparametersResource, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.DeviceClassParametersList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched deviceClassParameters.
-func (c *FakeDeviceClassParameterses) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.DeviceClassParameters, err error) {
+func (c *FakeDeviceClassParameters) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.DeviceClassParameters, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewRootPatchSubresourceAction(deviceclassparametersesResource, name, pt, data, subresources...), &v1alpha1.DeviceClassParameters{})
+		Invokes(testing.NewRootPatchSubresourceAction(deviceclassparametersResource, name, pt, data, subresources...), &v1alpha1.DeviceClassParameters{})
 	if obj == nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (c *FakeDeviceClassParameterses) Patch(ctx context.Context, name string, pt
 }
 
 // Apply takes the given apply declarative configuration, applies it and returns the applied deviceClassParameters.
-func (c *FakeDeviceClassParameterses) Apply(ctx context.Context, deviceClassParameters *gpuv1alpha1.DeviceClassParametersApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.DeviceClassParameters, err error) {
+func (c *FakeDeviceClassParameters) Apply(ctx context.Context, deviceClassParameters *gpuv1alpha1.DeviceClassParametersApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.DeviceClassParameters, err error) {
 	if deviceClassParameters == nil {
 		return nil, fmt.Errorf("deviceClassParameters provided to Apply must not be nil")
 	}
@@ -137,7 +137,7 @@ func (c *FakeDeviceClassParameterses) Apply(ctx context.Context, deviceClassPara
 		return nil, fmt.Errorf("deviceClassParameters.Name must be provided to Apply")
 	}
 	obj, err := c.Fake.
-		Invokes(testing.NewRootPatchSubresourceAction(deviceclassparametersesResource, *name, types.ApplyPatchType, data), &v1alpha1.DeviceClassParameters{})
+		Invokes(testing.NewRootPatchSubresourceAction(deviceclassparametersResource, *name, types.ApplyPatchType, data), &v1alpha1.DeviceClassParameters{})
 	if obj == nil {
 		return nil, err
 	}

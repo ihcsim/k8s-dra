@@ -33,7 +33,7 @@ import (
 )
 
 // DeviceClassParametersInformer provides access to a shared informer and lister for
-// DeviceClassParameterses.
+// DeviceClassParameters.
 type DeviceClassParametersInformer interface {
 	Informer() cache.SharedIndexInformer
 	Lister() v1alpha1.DeviceClassParametersLister
@@ -61,13 +61,13 @@ func NewFilteredDeviceClassParametersInformer(client versioned.Interface, resync
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.GpuV1alpha1().DeviceClassParameterses().List(context.TODO(), options)
+				return client.GpuV1alpha1().DeviceClassParameters().List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.GpuV1alpha1().DeviceClassParameterses().Watch(context.TODO(), options)
+				return client.GpuV1alpha1().DeviceClassParameters().Watch(context.TODO(), options)
 			},
 		},
 		&gpuv1alpha1.DeviceClassParameters{},

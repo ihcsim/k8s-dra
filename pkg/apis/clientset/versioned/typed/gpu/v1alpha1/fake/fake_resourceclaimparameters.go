@@ -32,20 +32,20 @@ import (
 	testing "k8s.io/client-go/testing"
 )
 
-// FakeResourceClaimParameterses implements ResourceClaimParametersInterface
-type FakeResourceClaimParameterses struct {
+// FakeResourceClaimParameters implements ResourceClaimParametersInterface
+type FakeResourceClaimParameters struct {
 	Fake *FakeGpuV1alpha1
 	ns   string
 }
 
-var resourceclaimparametersesResource = v1alpha1.SchemeGroupVersion.WithResource("resourceclaimparameterses")
+var resourceclaimparametersResource = v1alpha1.SchemeGroupVersion.WithResource("resourceclaimparameters")
 
-var resourceclaimparametersesKind = v1alpha1.SchemeGroupVersion.WithKind("ResourceClaimParameters")
+var resourceclaimparametersKind = v1alpha1.SchemeGroupVersion.WithKind("ResourceClaimParameters")
 
 // Get takes name of the resourceClaimParameters, and returns the corresponding resourceClaimParameters object, and an error if there is any.
-func (c *FakeResourceClaimParameterses) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
+func (c *FakeResourceClaimParameters) Get(ctx context.Context, name string, options v1.GetOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewGetAction(resourceclaimparametersesResource, c.ns, name), &v1alpha1.ResourceClaimParameters{})
+		Invokes(testing.NewGetAction(resourceclaimparametersResource, c.ns, name), &v1alpha1.ResourceClaimParameters{})
 
 	if obj == nil {
 		return nil, err
@@ -53,10 +53,10 @@ func (c *FakeResourceClaimParameterses) Get(ctx context.Context, name string, op
 	return obj.(*v1alpha1.ResourceClaimParameters), err
 }
 
-// List takes label and field selectors, and returns the list of ResourceClaimParameterses that match those selectors.
-func (c *FakeResourceClaimParameterses) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.ResourceClaimParametersList, err error) {
+// List takes label and field selectors, and returns the list of ResourceClaimParameters that match those selectors.
+func (c *FakeResourceClaimParameters) List(ctx context.Context, opts v1.ListOptions) (result *v1alpha1.ResourceClaimParametersList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(resourceclaimparametersesResource, resourceclaimparametersesKind, c.ns, opts), &v1alpha1.ResourceClaimParametersList{})
+		Invokes(testing.NewListAction(resourceclaimparametersResource, resourceclaimparametersKind, c.ns, opts), &v1alpha1.ResourceClaimParametersList{})
 
 	if obj == nil {
 		return nil, err
@@ -75,17 +75,17 @@ func (c *FakeResourceClaimParameterses) List(ctx context.Context, opts v1.ListOp
 	return list, err
 }
 
-// Watch returns a watch.Interface that watches the requested resourceClaimParameterses.
-func (c *FakeResourceClaimParameterses) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
+// Watch returns a watch.Interface that watches the requested resourceClaimParameters.
+func (c *FakeResourceClaimParameters) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
-		InvokesWatch(testing.NewWatchAction(resourceclaimparametersesResource, c.ns, opts))
+		InvokesWatch(testing.NewWatchAction(resourceclaimparametersResource, c.ns, opts))
 
 }
 
 // Create takes the representation of a resourceClaimParameters and creates it.  Returns the server's representation of the resourceClaimParameters, and an error, if there is any.
-func (c *FakeResourceClaimParameterses) Create(ctx context.Context, resourceClaimParameters *v1alpha1.ResourceClaimParameters, opts v1.CreateOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
+func (c *FakeResourceClaimParameters) Create(ctx context.Context, resourceClaimParameters *v1alpha1.ResourceClaimParameters, opts v1.CreateOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(resourceclaimparametersesResource, c.ns, resourceClaimParameters), &v1alpha1.ResourceClaimParameters{})
+		Invokes(testing.NewCreateAction(resourceclaimparametersResource, c.ns, resourceClaimParameters), &v1alpha1.ResourceClaimParameters{})
 
 	if obj == nil {
 		return nil, err
@@ -94,9 +94,9 @@ func (c *FakeResourceClaimParameterses) Create(ctx context.Context, resourceClai
 }
 
 // Update takes the representation of a resourceClaimParameters and updates it. Returns the server's representation of the resourceClaimParameters, and an error, if there is any.
-func (c *FakeResourceClaimParameterses) Update(ctx context.Context, resourceClaimParameters *v1alpha1.ResourceClaimParameters, opts v1.UpdateOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
+func (c *FakeResourceClaimParameters) Update(ctx context.Context, resourceClaimParameters *v1alpha1.ResourceClaimParameters, opts v1.UpdateOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(resourceclaimparametersesResource, c.ns, resourceClaimParameters), &v1alpha1.ResourceClaimParameters{})
+		Invokes(testing.NewUpdateAction(resourceclaimparametersResource, c.ns, resourceClaimParameters), &v1alpha1.ResourceClaimParameters{})
 
 	if obj == nil {
 		return nil, err
@@ -105,25 +105,25 @@ func (c *FakeResourceClaimParameterses) Update(ctx context.Context, resourceClai
 }
 
 // Delete takes name of the resourceClaimParameters and deletes it. Returns an error if one occurs.
-func (c *FakeResourceClaimParameterses) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
+func (c *FakeResourceClaimParameters) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
-		Invokes(testing.NewDeleteActionWithOptions(resourceclaimparametersesResource, c.ns, name, opts), &v1alpha1.ResourceClaimParameters{})
+		Invokes(testing.NewDeleteActionWithOptions(resourceclaimparametersResource, c.ns, name, opts), &v1alpha1.ResourceClaimParameters{})
 
 	return err
 }
 
 // DeleteCollection deletes a collection of objects.
-func (c *FakeResourceClaimParameterses) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(resourceclaimparametersesResource, c.ns, listOpts)
+func (c *FakeResourceClaimParameters) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(resourceclaimparametersResource, c.ns, listOpts)
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.ResourceClaimParametersList{})
 	return err
 }
 
 // Patch applies the patch and returns the patched resourceClaimParameters.
-func (c *FakeResourceClaimParameterses) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.ResourceClaimParameters, err error) {
+func (c *FakeResourceClaimParameters) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.ResourceClaimParameters, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(resourceclaimparametersesResource, c.ns, name, pt, data, subresources...), &v1alpha1.ResourceClaimParameters{})
+		Invokes(testing.NewPatchSubresourceAction(resourceclaimparametersResource, c.ns, name, pt, data, subresources...), &v1alpha1.ResourceClaimParameters{})
 
 	if obj == nil {
 		return nil, err
@@ -132,7 +132,7 @@ func (c *FakeResourceClaimParameterses) Patch(ctx context.Context, name string, 
 }
 
 // Apply takes the given apply declarative configuration, applies it and returns the applied resourceClaimParameters.
-func (c *FakeResourceClaimParameterses) Apply(ctx context.Context, resourceClaimParameters *gpuv1alpha1.ResourceClaimParametersApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
+func (c *FakeResourceClaimParameters) Apply(ctx context.Context, resourceClaimParameters *gpuv1alpha1.ResourceClaimParametersApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.ResourceClaimParameters, err error) {
 	if resourceClaimParameters == nil {
 		return nil, fmt.Errorf("resourceClaimParameters provided to Apply must not be nil")
 	}
@@ -145,7 +145,7 @@ func (c *FakeResourceClaimParameterses) Apply(ctx context.Context, resourceClaim
 		return nil, fmt.Errorf("resourceClaimParameters.Name must be provided to Apply")
 	}
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(resourceclaimparametersesResource, c.ns, *name, types.ApplyPatchType, data), &v1alpha1.ResourceClaimParameters{})
+		Invokes(testing.NewPatchSubresourceAction(resourceclaimparametersResource, c.ns, *name, types.ApplyPatchType, data), &v1alpha1.ResourceClaimParameters{})
 
 	if obj == nil {
 		return nil, err

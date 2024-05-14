@@ -28,8 +28,8 @@ import (
 
 type GpuV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	DeviceClassParametersesGetter
-	ResourceClaimParametersesGetter
+	DeviceClassParametersGetter
+	ResourceClaimParametersGetter
 }
 
 // GpuV1alpha1Client is used to interact with features provided by the gpu.resource.ihcsim group.
@@ -37,12 +37,12 @@ type GpuV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *GpuV1alpha1Client) DeviceClassParameterses() DeviceClassParametersInterface {
-	return newDeviceClassParameterses(c)
+func (c *GpuV1alpha1Client) DeviceClassParameters() DeviceClassParametersInterface {
+	return newDeviceClassParameters(c)
 }
 
-func (c *GpuV1alpha1Client) ResourceClaimParameterses(namespace string) ResourceClaimParametersInterface {
-	return newResourceClaimParameterses(c, namespace)
+func (c *GpuV1alpha1Client) ResourceClaimParameters(namespace string) ResourceClaimParametersInterface {
+	return newResourceClaimParameters(c, namespace)
 }
 
 // NewForConfig creates a new GpuV1alpha1Client for the given config.
