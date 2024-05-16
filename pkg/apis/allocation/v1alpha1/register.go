@@ -43,11 +43,10 @@ func Resource(resource string) schema.GroupResource {
 // Adds the list of known types to the given scheme.
 func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
-		&GPUDeviceClassParameters{},
-		&GPUDeviceClassParametersList{},
-		&GPUClaimParameters{},
-		&GPUClaimParametersList{},
+		&NodeDeviceAllocation{},
+		&NodeDeviceAllocationList{},
 	)
+
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
 }

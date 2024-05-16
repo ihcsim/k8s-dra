@@ -32,58 +32,58 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// DeviceClassParametersInformer provides access to a shared informer and lister for
-// DeviceClassParameters.
-type DeviceClassParametersInformer interface {
+// GPUDeviceClassParametersInformer provides access to a shared informer and lister for
+// GPUDeviceClassParameters.
+type GPUDeviceClassParametersInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.DeviceClassParametersLister
+	Lister() v1alpha1.GPUDeviceClassParametersLister
 }
 
-type deviceClassParametersInformer struct {
+type gPUDeviceClassParametersInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 }
 
-// NewDeviceClassParametersInformer constructs a new informer for DeviceClassParameters type.
+// NewGPUDeviceClassParametersInformer constructs a new informer for GPUDeviceClassParameters type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewDeviceClassParametersInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredDeviceClassParametersInformer(client, resyncPeriod, indexers, nil)
+func NewGPUDeviceClassParametersInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredGPUDeviceClassParametersInformer(client, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredDeviceClassParametersInformer constructs a new informer for DeviceClassParameters type.
+// NewFilteredGPUDeviceClassParametersInformer constructs a new informer for GPUDeviceClassParameters type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredDeviceClassParametersInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredGPUDeviceClassParametersInformer(client versioned.Interface, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.GpuV1alpha1().DeviceClassParameters().List(context.TODO(), options)
+				return client.GpuV1alpha1().GPUDeviceClassParameters().List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.GpuV1alpha1().DeviceClassParameters().Watch(context.TODO(), options)
+				return client.GpuV1alpha1().GPUDeviceClassParameters().Watch(context.TODO(), options)
 			},
 		},
-		&gpuv1alpha1.DeviceClassParameters{},
+		&gpuv1alpha1.GPUDeviceClassParameters{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *deviceClassParametersInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredDeviceClassParametersInformer(client, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *gPUDeviceClassParametersInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredGPUDeviceClassParametersInformer(client, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *deviceClassParametersInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&gpuv1alpha1.DeviceClassParameters{}, f.defaultInformer)
+func (f *gPUDeviceClassParametersInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&gpuv1alpha1.GPUDeviceClassParameters{}, f.defaultInformer)
 }
 
-func (f *deviceClassParametersInformer) Lister() v1alpha1.DeviceClassParametersLister {
-	return v1alpha1.NewDeviceClassParametersLister(f.Informer().GetIndexer())
+func (f *gPUDeviceClassParametersInformer) Lister() v1alpha1.GPUDeviceClassParametersLister {
+	return v1alpha1.NewGPUDeviceClassParametersLister(f.Informer().GetIndexer())
 }

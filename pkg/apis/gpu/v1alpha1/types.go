@@ -7,16 +7,16 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
 
-// DeviceClassParameters holds the set of parameters provided when creating a resource class for this driver.
-type DeviceClassParameters struct {
+// GPUDeviceClassParameters holds the set of parameters provided when creating a resource class for this driver.
+type GPUDeviceClassParameters struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec DeviceClassParametersSpec `json:"spec,omitempty"`
+	Spec GPUDeviceClassParametersSpec `json:"spec,omitempty"`
 }
 
-// DeviceClassParametersSpec is the spec for the DeviceClassParametersSpec CRD.
-type DeviceClassParametersSpec struct {
+// GPUDeviceClassParametersSpec is the spec for the GPUDeviceClassParametersSpec CRD.
+type GPUDeviceClassParametersSpec struct {
 	DeviceSelector []DeviceSelector `json:"deviceSelector,omitempty"`
 }
 
@@ -28,12 +28,12 @@ type DeviceSelector struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// DeviceClassParametersList represents the "plural" of a DeviceClassParameters CRD object.
-type DeviceClassParametersList struct {
+// GPUDeviceClassParametersList represents the "plural" of a DeviceClassParameters CRD object.
+type GPUDeviceClassParametersList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 
-	Items []DeviceClassParameters `json:"items"`
+	Items []GPUDeviceClassParameters `json:"items"`
 }
 
 // +genclient
@@ -41,25 +41,25 @@ type DeviceClassParametersList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:resource:scope=Namespaced
 
-// ResourceClaimParameters holds the set of parameters provided when creating a resource claim for a GPU.
-type ResourceClaimParameters struct {
+// GPUClaimParameters holds the set of parameters provided when creating a resource claim for a GPU.
+type GPUClaimParameters struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec ResourceClaimParametersSpec `json:"spec,omitempty"`
+	Spec GPUClaimParametersSpec `json:"spec,omitempty"`
 }
 
-// ResourceClaimParametersSpec is the spec for the ResourceClaimParameters CRD.
-type ResourceClaimParametersSpec struct {
+// GPUClaimParametersSpec is the spec for the ResourceClaimParameters CRD.
+type GPUClaimParametersSpec struct {
 	Count int `json:"count,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ResourceClaimParametersList represents the "plural" of a ResourceClaimParameters CRD object.
-type ResourceClaimParametersList struct {
+// GPUClaimParametersList represents the "plural" of a ResourceClaimParameters CRD object.
+type GPUClaimParametersList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 
-	Items []ResourceClaimParameters `json:"items"`
+	Items []GPUClaimParameters `json:"items"`
 }

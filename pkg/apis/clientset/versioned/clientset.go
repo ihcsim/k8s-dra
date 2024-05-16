@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"net/http"
 
+	allocationv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned/typed/allocation/v1alpha1"
 	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned/typed/gpu/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
@@ -30,13 +31,20 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
+	AllocationV1alpha1() allocationv1alpha1.AllocationV1alpha1Interface
 	GpuV1alpha1() gpuv1alpha1.GpuV1alpha1Interface
 }
 
 // Clientset contains the clients for groups.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	gpuV1alpha1 *gpuv1alpha1.GpuV1alpha1Client
+	allocationV1alpha1 *allocationv1alpha1.AllocationV1alpha1Client
+	gpuV1alpha1        *gpuv1alpha1.GpuV1alpha1Client
+}
+
+// AllocationV1alpha1 retrieves the AllocationV1alpha1Client
+func (c *Clientset) AllocationV1alpha1() allocationv1alpha1.AllocationV1alpha1Interface {
+	return c.allocationV1alpha1
 }
 
 // GpuV1alpha1 retrieves the GpuV1alpha1Client
@@ -88,6 +96,10 @@ func NewForConfigAndClient(c *rest.Config, httpClient *http.Client) (*Clientset,
 
 	var cs Clientset
 	var err error
+	cs.allocationV1alpha1, err = allocationv1alpha1.NewForConfigAndClient(&configShallowCopy, httpClient)
+	if err != nil {
+		return nil, err
+	}
 	cs.gpuV1alpha1, err = gpuv1alpha1.NewForConfigAndClient(&configShallowCopy, httpClient)
 	if err != nil {
 		return nil, err
@@ -113,6 +125,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
+	cs.allocationV1alpha1 = allocationv1alpha1.New(c)
 	cs.gpuV1alpha1 = gpuv1alpha1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)

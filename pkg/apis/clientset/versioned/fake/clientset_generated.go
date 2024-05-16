@@ -20,6 +20,8 @@ package fake
 
 import (
 	clientset "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned"
+	allocationv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned/typed/allocation/v1alpha1"
+	fakeallocationv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned/typed/allocation/v1alpha1/fake"
 	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned/typed/gpu/v1alpha1"
 	fakegpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned/typed/gpu/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -78,6 +80,11 @@ var (
 	_ clientset.Interface = &Clientset{}
 	_ testing.FakeClient  = &Clientset{}
 )
+
+// AllocationV1alpha1 retrieves the AllocationV1alpha1Client
+func (c *Clientset) AllocationV1alpha1() allocationv1alpha1.AllocationV1alpha1Interface {
+	return &fakeallocationv1alpha1.FakeAllocationV1alpha1{Fake: &c.Fake}
+}
 
 // GpuV1alpha1 retrieves the GpuV1alpha1Client
 func (c *Clientset) GpuV1alpha1() gpuv1alpha1.GpuV1alpha1Interface {

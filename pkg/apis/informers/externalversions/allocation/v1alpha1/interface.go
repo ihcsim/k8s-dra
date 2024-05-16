@@ -24,10 +24,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// GPUClaimParameters returns a GPUClaimParametersInformer.
-	GPUClaimParameters() GPUClaimParametersInformer
-	// GPUDeviceClassParameters returns a GPUDeviceClassParametersInformer.
-	GPUDeviceClassParameters() GPUDeviceClassParametersInformer
+	// NodeDeviceAllocations returns a NodeDeviceAllocationInformer.
+	NodeDeviceAllocations() NodeDeviceAllocationInformer
 }
 
 type version struct {
@@ -41,12 +39,7 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// GPUClaimParameters returns a GPUClaimParametersInformer.
-func (v *version) GPUClaimParameters() GPUClaimParametersInformer {
-	return &gPUClaimParametersInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
-// GPUDeviceClassParameters returns a GPUDeviceClassParametersInformer.
-func (v *version) GPUDeviceClassParameters() GPUDeviceClassParametersInformer {
-	return &gPUDeviceClassParametersInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+// NodeDeviceAllocations returns a NodeDeviceAllocationInformer.
+func (v *version) NodeDeviceAllocations() NodeDeviceAllocationInformer {
+	return &nodeDeviceAllocationInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

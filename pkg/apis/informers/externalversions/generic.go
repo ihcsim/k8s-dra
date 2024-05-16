@@ -21,7 +21,8 @@ package externalversions
 import (
 	"fmt"
 
-	v1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
+	v1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/allocation/v1alpha1"
+	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )
@@ -52,11 +53,15 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=gpu.resource.ihcsim, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("deviceclassparameters"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Gpu().V1alpha1().DeviceClassParameters().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("resourceclaimparameters"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Gpu().V1alpha1().ResourceClaimParameters().Informer()}, nil
+	// Group=allocation, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithResource("nodedeviceallocations"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Allocation().V1alpha1().NodeDeviceAllocations().Informer()}, nil
+
+		// Group=gpu, Version=v1alpha1
+	case gpuv1alpha1.SchemeGroupVersion.WithResource("gpuclaimparameters"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Gpu().V1alpha1().GPUClaimParameters().Informer()}, nil
+	case gpuv1alpha1.SchemeGroupVersion.WithResource("gpudeviceclassparameters"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Gpu().V1alpha1().GPUDeviceClassParameters().Informer()}, nil
 
 	}
 

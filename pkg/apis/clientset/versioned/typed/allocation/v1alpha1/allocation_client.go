@@ -21,34 +21,29 @@ package v1alpha1
 import (
 	"net/http"
 
+	v1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/allocation/v1alpha1"
 	"github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned/scheme"
-	v1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
 	rest "k8s.io/client-go/rest"
 )
 
-type GpuV1alpha1Interface interface {
+type AllocationV1alpha1Interface interface {
 	RESTClient() rest.Interface
-	GPUClaimParametersGetter
-	GPUDeviceClassParametersGetter
+	NodeDeviceAllocationsGetter
 }
 
-// GpuV1alpha1Client is used to interact with features provided by the gpu group.
-type GpuV1alpha1Client struct {
+// AllocationV1alpha1Client is used to interact with features provided by the allocation group.
+type AllocationV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *GpuV1alpha1Client) GPUClaimParameters(namespace string) GPUClaimParametersInterface {
-	return newGPUClaimParameters(c, namespace)
+func (c *AllocationV1alpha1Client) NodeDeviceAllocations(namespace string) NodeDeviceAllocationInterface {
+	return newNodeDeviceAllocations(c, namespace)
 }
 
-func (c *GpuV1alpha1Client) GPUDeviceClassParameters() GPUDeviceClassParametersInterface {
-	return newGPUDeviceClassParameters(c)
-}
-
-// NewForConfig creates a new GpuV1alpha1Client for the given config.
+// NewForConfig creates a new AllocationV1alpha1Client for the given config.
 // NewForConfig is equivalent to NewForConfigAndClient(c, httpClient),
 // where httpClient was generated with rest.HTTPClientFor(c).
-func NewForConfig(c *rest.Config) (*GpuV1alpha1Client, error) {
+func NewForConfig(c *rest.Config) (*AllocationV1alpha1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
@@ -60,9 +55,9 @@ func NewForConfig(c *rest.Config) (*GpuV1alpha1Client, error) {
 	return NewForConfigAndClient(&config, httpClient)
 }
 
-// NewForConfigAndClient creates a new GpuV1alpha1Client for the given config and http client.
+// NewForConfigAndClient creates a new AllocationV1alpha1Client for the given config and http client.
 // Note the http client provided takes precedence over the configured transport values.
-func NewForConfigAndClient(c *rest.Config, h *http.Client) (*GpuV1alpha1Client, error) {
+func NewForConfigAndClient(c *rest.Config, h *http.Client) (*AllocationV1alpha1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
@@ -71,12 +66,12 @@ func NewForConfigAndClient(c *rest.Config, h *http.Client) (*GpuV1alpha1Client, 
 	if err != nil {
 		return nil, err
 	}
-	return &GpuV1alpha1Client{client}, nil
+	return &AllocationV1alpha1Client{client}, nil
 }
 
-// NewForConfigOrDie creates a new GpuV1alpha1Client for the given config and
+// NewForConfigOrDie creates a new AllocationV1alpha1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *rest.Config) *GpuV1alpha1Client {
+func NewForConfigOrDie(c *rest.Config) *AllocationV1alpha1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -84,9 +79,9 @@ func NewForConfigOrDie(c *rest.Config) *GpuV1alpha1Client {
 	return client
 }
 
-// New creates a new GpuV1alpha1Client for the given RESTClient.
-func New(c rest.Interface) *GpuV1alpha1Client {
-	return &GpuV1alpha1Client{c}
+// New creates a new AllocationV1alpha1Client for the given RESTClient.
+func New(c rest.Interface) *AllocationV1alpha1Client {
+	return &AllocationV1alpha1Client{c}
 }
 
 func setConfigDefaults(config *rest.Config) error {
@@ -104,7 +99,7 @@ func setConfigDefaults(config *rest.Config) error {
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *GpuV1alpha1Client) RESTClient() rest.Interface {
+func (c *AllocationV1alpha1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

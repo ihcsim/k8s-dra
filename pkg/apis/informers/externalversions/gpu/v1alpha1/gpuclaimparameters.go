@@ -32,59 +32,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// ResourceClaimParametersInformer provides access to a shared informer and lister for
-// ResourceClaimParameters.
-type ResourceClaimParametersInformer interface {
+// GPUClaimParametersInformer provides access to a shared informer and lister for
+// GPUClaimParameters.
+type GPUClaimParametersInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.ResourceClaimParametersLister
+	Lister() v1alpha1.GPUClaimParametersLister
 }
 
-type resourceClaimParametersInformer struct {
+type gPUClaimParametersInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewResourceClaimParametersInformer constructs a new informer for ResourceClaimParameters type.
+// NewGPUClaimParametersInformer constructs a new informer for GPUClaimParameters type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewResourceClaimParametersInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredResourceClaimParametersInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewGPUClaimParametersInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredGPUClaimParametersInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredResourceClaimParametersInformer constructs a new informer for ResourceClaimParameters type.
+// NewFilteredGPUClaimParametersInformer constructs a new informer for GPUClaimParameters type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredResourceClaimParametersInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredGPUClaimParametersInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.GpuV1alpha1().ResourceClaimParameters(namespace).List(context.TODO(), options)
+				return client.GpuV1alpha1().GPUClaimParameters(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.GpuV1alpha1().ResourceClaimParameters(namespace).Watch(context.TODO(), options)
+				return client.GpuV1alpha1().GPUClaimParameters(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&gpuv1alpha1.ResourceClaimParameters{},
+		&gpuv1alpha1.GPUClaimParameters{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *resourceClaimParametersInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredResourceClaimParametersInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *gPUClaimParametersInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredGPUClaimParametersInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *resourceClaimParametersInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&gpuv1alpha1.ResourceClaimParameters{}, f.defaultInformer)
+func (f *gPUClaimParametersInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&gpuv1alpha1.GPUClaimParameters{}, f.defaultInformer)
 }
 
-func (f *resourceClaimParametersInformer) Lister() v1alpha1.ResourceClaimParametersLister {
-	return v1alpha1.NewResourceClaimParametersLister(f.Informer().GetIndexer())
+func (f *gPUClaimParametersInformer) Lister() v1alpha1.GPUClaimParametersLister {
+	return v1alpha1.NewGPUClaimParametersLister(f.Informer().GetIndexer())
 }

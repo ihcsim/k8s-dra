@@ -18,22 +18,22 @@ limitations under the License.
 
 package v1alpha1
 
-// DeviceClassParametersSpecApplyConfiguration represents an declarative configuration of the DeviceClassParametersSpec type for use
+// GPUDeviceClassParametersSpecApplyConfiguration represents an declarative configuration of the GPUDeviceClassParametersSpec type for use
 // with apply.
-type DeviceClassParametersSpecApplyConfiguration struct {
+type GPUDeviceClassParametersSpecApplyConfiguration struct {
 	DeviceSelector []DeviceSelectorApplyConfiguration `json:"deviceSelector,omitempty"`
 }
 
-// DeviceClassParametersSpecApplyConfiguration constructs an declarative configuration of the DeviceClassParametersSpec type for use with
+// GPUDeviceClassParametersSpecApplyConfiguration constructs an declarative configuration of the GPUDeviceClassParametersSpec type for use with
 // apply.
-func DeviceClassParametersSpec() *DeviceClassParametersSpecApplyConfiguration {
-	return &DeviceClassParametersSpecApplyConfiguration{}
+func GPUDeviceClassParametersSpec() *GPUDeviceClassParametersSpecApplyConfiguration {
+	return &GPUDeviceClassParametersSpecApplyConfiguration{}
 }
 
 // WithDeviceSelector adds the given value to the DeviceSelector field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the DeviceSelector field.
-func (b *DeviceClassParametersSpecApplyConfiguration) WithDeviceSelector(values ...*DeviceSelectorApplyConfiguration) *DeviceClassParametersSpecApplyConfiguration {
+func (b *GPUDeviceClassParametersSpecApplyConfiguration) WithDeviceSelector(values ...*DeviceSelectorApplyConfiguration) *GPUDeviceClassParametersSpecApplyConfiguration {
 	for i := range values {
 		if values[i] == nil {
 			panic("nil value passed to WithDeviceSelector")

@@ -21,11 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-const (
-	DeviceTypeGPU          = "gpu"
-	GPUClaimParametersKind = "GPUClaimParameters"
-	Version                = "v1alpha1"
-)
+const Version = "v1alpha1"
 
 var SchemeGroupVersion = schema.GroupVersion{
 	Group:   apis.GroupName,

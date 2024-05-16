@@ -14,20 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package apis
 
-import (
-	"github.com/ihcsim/k8s-dra/pkg/apis"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-)
-
-const (
-	DeviceTypeGPU          = "gpu"
-	GPUClaimParametersKind = "GPUClaimParameters"
-	Version                = "v1alpha1"
-)
-
-var SchemeGroupVersion = schema.GroupVersion{
-	Group:   apis.GroupName,
-	Version: Version,
-}
+const GroupName = "dra.resources.ihcsim"

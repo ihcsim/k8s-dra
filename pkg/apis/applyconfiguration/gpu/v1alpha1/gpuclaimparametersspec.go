@@ -18,22 +18,22 @@ limitations under the License.
 
 package v1alpha1
 
-// ResourceClaimParametersSpecApplyConfiguration represents an declarative configuration of the ResourceClaimParametersSpec type for use
+// GPUClaimParametersSpecApplyConfiguration represents an declarative configuration of the GPUClaimParametersSpec type for use
 // with apply.
-type ResourceClaimParametersSpecApplyConfiguration struct {
+type GPUClaimParametersSpecApplyConfiguration struct {
 	Count *int `json:"count,omitempty"`
 }
 
-// ResourceClaimParametersSpecApplyConfiguration constructs an declarative configuration of the ResourceClaimParametersSpec type for use with
+// GPUClaimParametersSpecApplyConfiguration constructs an declarative configuration of the GPUClaimParametersSpec type for use with
 // apply.
-func ResourceClaimParametersSpec() *ResourceClaimParametersSpecApplyConfiguration {
-	return &ResourceClaimParametersSpecApplyConfiguration{}
+func GPUClaimParametersSpec() *GPUClaimParametersSpecApplyConfiguration {
+	return &GPUClaimParametersSpecApplyConfiguration{}
 }
 
 // WithCount sets the Count field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Count field is set to the value of the last call.
-func (b *ResourceClaimParametersSpecApplyConfiguration) WithCount(value int) *ResourceClaimParametersSpecApplyConfiguration {
+func (b *GPUClaimParametersSpecApplyConfiguration) WithCount(value int) *GPUClaimParametersSpecApplyConfiguration {
 	b.Count = &value
 	return b
 }

@@ -19,8 +19,10 @@ limitations under the License.
 package applyconfiguration
 
 import (
-	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/applyconfiguration/gpu/v1alpha1"
-	v1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
+	v1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/allocation/v1alpha1"
+	allocationv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/applyconfiguration/allocation/v1alpha1"
+	applyconfigurationgpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/applyconfiguration/gpu/v1alpha1"
+	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -28,17 +30,39 @@ import (
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=gpu.resource.ihcsim, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithKind("DeviceClassParameters"):
-		return &gpuv1alpha1.DeviceClassParametersApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("DeviceClassParametersSpec"):
-		return &gpuv1alpha1.DeviceClassParametersSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("DeviceSelector"):
-		return &gpuv1alpha1.DeviceSelectorApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("ResourceClaimParameters"):
-		return &gpuv1alpha1.ResourceClaimParametersApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("ResourceClaimParametersSpec"):
-		return &gpuv1alpha1.ResourceClaimParametersSpecApplyConfiguration{}
+	// Group=allocation, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithKind("AllocatableDevice"):
+		return &allocationv1alpha1.AllocatableDeviceApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("AllocatableGPU"):
+		return &allocationv1alpha1.AllocatableGPUApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("AllocatedDevices"):
+		return &allocationv1alpha1.AllocatedDevicesApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("AllocatedGPU"):
+		return &allocationv1alpha1.AllocatedGPUApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("AllocatedGPUs"):
+		return &allocationv1alpha1.AllocatedGPUsApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("NodeDeviceAllocation"):
+		return &allocationv1alpha1.NodeDeviceAllocationApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("NodeDeviceAllocationStatus"):
+		return &allocationv1alpha1.NodeDeviceAllocationStatusApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("PreparedDevices"):
+		return &allocationv1alpha1.PreparedDevicesApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("PreparedGPU"):
+		return &allocationv1alpha1.PreparedGPUApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("PreparedGPUs"):
+		return &allocationv1alpha1.PreparedGPUsApplyConfiguration{}
+
+		// Group=gpu, Version=v1alpha1
+	case gpuv1alpha1.SchemeGroupVersion.WithKind("DeviceSelector"):
+		return &applyconfigurationgpuv1alpha1.DeviceSelectorApplyConfiguration{}
+	case gpuv1alpha1.SchemeGroupVersion.WithKind("GPUClaimParameters"):
+		return &applyconfigurationgpuv1alpha1.GPUClaimParametersApplyConfiguration{}
+	case gpuv1alpha1.SchemeGroupVersion.WithKind("GPUClaimParametersSpec"):
+		return &applyconfigurationgpuv1alpha1.GPUClaimParametersSpecApplyConfiguration{}
+	case gpuv1alpha1.SchemeGroupVersion.WithKind("GPUDeviceClassParameters"):
+		return &applyconfigurationgpuv1alpha1.GPUDeviceClassParametersApplyConfiguration{}
+	case gpuv1alpha1.SchemeGroupVersion.WithKind("GPUDeviceClassParametersSpec"):
+		return &applyconfigurationgpuv1alpha1.GPUDeviceClassParametersSpecApplyConfiguration{}
 
 	}
 	return nil

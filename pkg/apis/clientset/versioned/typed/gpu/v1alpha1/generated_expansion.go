@@ -18,6 +18,6 @@ limitations under the License.
 
 package v1alpha1
 
-type DeviceClassParametersExpansion interface{}
+type GPUClaimParametersExpansion interface{}
 
-type ResourceClaimParametersExpansion interface{}
+type GPUDeviceClassParametersExpansion interface{}
