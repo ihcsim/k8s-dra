@@ -29,7 +29,7 @@ import (
 type GpuV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	GPUClaimParametersGetter
-	GPUDeviceClassParametersGetter
+	GPUClassParametersGetter
 }
 
 // GpuV1alpha1Client is used to interact with features provided by the gpu group.
@@ -41,8 +41,8 @@ func (c *GpuV1alpha1Client) GPUClaimParameters(namespace string) GPUClaimParamet
 	return newGPUClaimParameters(c, namespace)
 }
 
-func (c *GpuV1alpha1Client) GPUDeviceClassParameters() GPUDeviceClassParametersInterface {
-	return newGPUDeviceClassParameters(c)
+func (c *GpuV1alpha1Client) GPUClassParameters() GPUClassParametersInterface {
+	return newGPUClassParameters(c)
 }
 
 // NewForConfig creates a new GpuV1alpha1Client for the given config.

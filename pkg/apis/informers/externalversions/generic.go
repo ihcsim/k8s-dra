@@ -60,8 +60,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		// Group=gpu, Version=v1alpha1
 	case gpuv1alpha1.SchemeGroupVersion.WithResource("gpuclaimparameters"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Gpu().V1alpha1().GPUClaimParameters().Informer()}, nil
-	case gpuv1alpha1.SchemeGroupVersion.WithResource("gpudeviceclassparameters"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Gpu().V1alpha1().GPUDeviceClassParameters().Informer()}, nil
+	case gpuv1alpha1.SchemeGroupVersion.WithResource("gpuclassparameters"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Gpu().V1alpha1().GPUClassParameters().Informer()}, nil
 
 	}
 

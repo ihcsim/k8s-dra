@@ -59,10 +59,10 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &applyconfigurationgpuv1alpha1.GPUClaimParametersApplyConfiguration{}
 	case gpuv1alpha1.SchemeGroupVersion.WithKind("GPUClaimParametersSpec"):
 		return &applyconfigurationgpuv1alpha1.GPUClaimParametersSpecApplyConfiguration{}
-	case gpuv1alpha1.SchemeGroupVersion.WithKind("GPUDeviceClassParameters"):
-		return &applyconfigurationgpuv1alpha1.GPUDeviceClassParametersApplyConfiguration{}
-	case gpuv1alpha1.SchemeGroupVersion.WithKind("GPUDeviceClassParametersSpec"):
-		return &applyconfigurationgpuv1alpha1.GPUDeviceClassParametersSpecApplyConfiguration{}
+	case gpuv1alpha1.SchemeGroupVersion.WithKind("GPUClassParameters"):
+		return &applyconfigurationgpuv1alpha1.GPUClassParametersApplyConfiguration{}
+	case gpuv1alpha1.SchemeGroupVersion.WithKind("GPUClassParametersSpec"):
+		return &applyconfigurationgpuv1alpha1.GPUClassParametersSpecApplyConfiguration{}
 
 	}
 	return nil

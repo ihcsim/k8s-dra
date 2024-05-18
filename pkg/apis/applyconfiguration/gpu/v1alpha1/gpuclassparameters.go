@@ -24,20 +24,20 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// GPUDeviceClassParametersApplyConfiguration represents an declarative configuration of the GPUDeviceClassParameters type for use
+// GPUClassParametersApplyConfiguration represents an declarative configuration of the GPUClassParameters type for use
 // with apply.
-type GPUDeviceClassParametersApplyConfiguration struct {
+type GPUClassParametersApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *GPUDeviceClassParametersSpecApplyConfiguration `json:"spec,omitempty"`
+	Spec                             *GPUClassParametersSpecApplyConfiguration `json:"spec,omitempty"`
 }
 
-// GPUDeviceClassParameters constructs an declarative configuration of the GPUDeviceClassParameters type for use with
+// GPUClassParameters constructs an declarative configuration of the GPUClassParameters type for use with
 // apply.
-func GPUDeviceClassParameters(name string) *GPUDeviceClassParametersApplyConfiguration {
-	b := &GPUDeviceClassParametersApplyConfiguration{}
+func GPUClassParameters(name string) *GPUClassParametersApplyConfiguration {
+	b := &GPUClassParametersApplyConfiguration{}
 	b.WithName(name)
-	b.WithKind("GPUDeviceClassParameters")
+	b.WithKind("GPUClassParameters")
 	b.WithAPIVersion("gpu/v1alpha1")
 	return b
 }
@@ -45,7 +45,7 @@ func GPUDeviceClassParameters(name string) *GPUDeviceClassParametersApplyConfigu
 // WithKind sets the Kind field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Kind field is set to the value of the last call.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithKind(value string) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithKind(value string) *GPUClassParametersApplyConfiguration {
 	b.Kind = &value
 	return b
 }
@@ -53,7 +53,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithKind(value string) *GPU
 // WithAPIVersion sets the APIVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the APIVersion field is set to the value of the last call.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithAPIVersion(value string) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithAPIVersion(value string) *GPUClassParametersApplyConfiguration {
 	b.APIVersion = &value
 	return b
 }
@@ -61,7 +61,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithAPIVersion(value string
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithName(value string) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithName(value string) *GPUClassParametersApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Name = &value
 	return b
@@ -70,7 +70,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithName(value string) *GPU
 // WithGenerateName sets the GenerateName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the GenerateName field is set to the value of the last call.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithGenerateName(value string) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithGenerateName(value string) *GPUClassParametersApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.GenerateName = &value
 	return b
@@ -79,7 +79,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithGenerateName(value stri
 // WithNamespace sets the Namespace field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Namespace field is set to the value of the last call.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithNamespace(value string) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithNamespace(value string) *GPUClassParametersApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Namespace = &value
 	return b
@@ -88,7 +88,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithNamespace(value string)
 // WithUID sets the UID field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the UID field is set to the value of the last call.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithUID(value types.UID) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithUID(value types.UID) *GPUClassParametersApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.UID = &value
 	return b
@@ -97,7 +97,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithUID(value types.UID) *G
 // WithResourceVersion sets the ResourceVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ResourceVersion field is set to the value of the last call.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithResourceVersion(value string) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithResourceVersion(value string) *GPUClassParametersApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ResourceVersion = &value
 	return b
@@ -106,7 +106,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithResourceVersion(value s
 // WithGeneration sets the Generation field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Generation field is set to the value of the last call.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithGeneration(value int64) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithGeneration(value int64) *GPUClassParametersApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Generation = &value
 	return b
@@ -115,7 +115,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithGeneration(value int64)
 // WithCreationTimestamp sets the CreationTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CreationTimestamp field is set to the value of the last call.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithCreationTimestamp(value metav1.Time) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithCreationTimestamp(value metav1.Time) *GPUClassParametersApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.CreationTimestamp = &value
 	return b
@@ -124,7 +124,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithCreationTimestamp(value
 // WithDeletionTimestamp sets the DeletionTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionTimestamp field is set to the value of the last call.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *GPUClassParametersApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.DeletionTimestamp = &value
 	return b
@@ -133,7 +133,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithDeletionTimestamp(value
 // WithDeletionGracePeriodSeconds sets the DeletionGracePeriodSeconds field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionGracePeriodSeconds field is set to the value of the last call.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *GPUClassParametersApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.DeletionGracePeriodSeconds = &value
 	return b
@@ -143,7 +143,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithDeletionGracePeriodSeco
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Labels field,
 // overwriting an existing map entries in Labels field with the same key.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithLabels(entries map[string]string) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithLabels(entries map[string]string) *GPUClassParametersApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.Labels == nil && len(entries) > 0 {
 		b.Labels = make(map[string]string, len(entries))
@@ -158,7 +158,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithLabels(entries map[stri
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Annotations field,
 // overwriting an existing map entries in Annotations field with the same key.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithAnnotations(entries map[string]string) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithAnnotations(entries map[string]string) *GPUClassParametersApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.Annotations == nil && len(entries) > 0 {
 		b.Annotations = make(map[string]string, len(entries))
@@ -172,7 +172,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithAnnotations(entries map
 // WithOwnerReferences adds the given value to the OwnerReferences field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the OwnerReferences field.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *GPUClassParametersApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		if values[i] == nil {
@@ -186,7 +186,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithOwnerReferences(values 
 // WithFinalizers adds the given value to the Finalizers field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Finalizers field.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithFinalizers(values ...string) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithFinalizers(values ...string) *GPUClassParametersApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		b.Finalizers = append(b.Finalizers, values[i])
@@ -194,7 +194,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) WithFinalizers(values ...st
 	return b
 }
 
-func (b *GPUDeviceClassParametersApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
+func (b *GPUClassParametersApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
 	if b.ObjectMetaApplyConfiguration == nil {
 		b.ObjectMetaApplyConfiguration = &v1.ObjectMetaApplyConfiguration{}
 	}
@@ -203,7 +203,7 @@ func (b *GPUDeviceClassParametersApplyConfiguration) ensureObjectMetaApplyConfig
 // WithSpec sets the Spec field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Spec field is set to the value of the last call.
-func (b *GPUDeviceClassParametersApplyConfiguration) WithSpec(value *GPUDeviceClassParametersSpecApplyConfiguration) *GPUDeviceClassParametersApplyConfiguration {
+func (b *GPUClassParametersApplyConfiguration) WithSpec(value *GPUClassParametersSpecApplyConfiguration) *GPUClassParametersApplyConfiguration {
 	b.Spec = value
 	return b
 }

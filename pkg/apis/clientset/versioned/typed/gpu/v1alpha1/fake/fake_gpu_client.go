@@ -32,8 +32,8 @@ func (c *FakeGpuV1alpha1) GPUClaimParameters(namespace string) v1alpha1.GPUClaim
 	return &FakeGPUClaimParameters{c, namespace}
 }
 
-func (c *FakeGpuV1alpha1) GPUDeviceClassParameters() v1alpha1.GPUDeviceClassParametersInterface {
-	return &FakeGPUDeviceClassParameters{c}
+func (c *FakeGpuV1alpha1) GPUClassParameters() v1alpha1.GPUClassParametersInterface {
+	return &FakeGPUClassParameters{c}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

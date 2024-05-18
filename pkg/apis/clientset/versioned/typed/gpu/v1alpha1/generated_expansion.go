@@ -20,4 +20,4 @@ package v1alpha1
 
 type GPUClaimParametersExpansion interface{}
 
-type GPUDeviceClassParametersExpansion interface{}
+type GPUClassParametersExpansion interface{}
