@@ -65,7 +65,7 @@ func run(ctx context.Context) error {
 
 	go func() {
 		s := http.NewServeMux()
-		s.HandleFunc(fmt.Sprintf("%s", pprofPath), pprof.Index)
+		s.HandleFunc(pprofPath, pprof.Index)
 		if err := http.ListenAndServe(fmt.Sprintf(":%d", pprofPort), s); err != nil {
 			log.Warn().Err(err).Msg("failed to start pprof server")
 		}

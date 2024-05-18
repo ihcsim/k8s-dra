@@ -203,8 +203,9 @@ func (d *driver) allocateGPU(
 
 	go func() {
 		<-releaseClaim
+		//nolint:staticcheck
 		if err := d.gpu.removeAllocatedClaim(claimUID); err != nil {
-			// log errors here
+			//@TODO log errors here
 		}
 	}()
 
@@ -272,8 +273,7 @@ func getSelectedNode(claim *resourcev1alpha2.ResourceClaim) string {
 }
 
 func (d *driver) deallocateGPU(ctx context.Context, claimUID string, gpu allocationv1alpha1.AllocatedGPU) error {
-	d.gpu.removeAllocatedClaim(claimUID)
-	return nil
+	return d.gpu.removeAllocatedClaim(claimUID)
 }
 
 // see https://pkg.go.dev/k8s.io/dynamic-resource-allocation/controller#Driver
