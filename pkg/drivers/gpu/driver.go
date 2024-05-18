@@ -2,12 +2,13 @@ package gpu
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/ihcsim/k8s-dra/pkg/apis"
-	allocationapiv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/allocation/v1alpha1"
+	allocationv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/allocation/v1alpha1"
 	clientset "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned"
-	gpuapiv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
+	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	resourcev1alpha2 "k8s.io/api/resource/v1alpha2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,10 +42,10 @@ func (d *driver) GetName() string {
 // see https://pkg.go.dev/k8s.io/dynamic-resource-allocation/controller#Driver
 func (d *driver) GetClassParameters(ctx context.Context, class *resourcev1alpha2.ResourceClass) (interface{}, error) {
 	if class.ParametersRef == nil {
-		return &gpuapiv1alpha1.GPUDeviceClassParametersSpec{
-			DeviceSelector: []gpuapiv1alpha1.DeviceSelector{
+		return &gpuv1alpha1.GPUDeviceClassParametersSpec{
+			DeviceSelector: []gpuv1alpha1.DeviceSelector{
 				{
-					Type: gpuapiv1alpha1.DeviceTypeGPU,
+					Type: gpuv1alpha1.DeviceTypeGPU,
 					Name: "*",
 				},
 			},
@@ -74,7 +75,7 @@ func (d *driver) GetClaimParameters(
 	class *resourcev1alpha2.ResourceClass,
 	classParameters interface{}) (interface{}, error) {
 	if claim.Spec.ParametersRef == nil {
-		return gpuapiv1alpha1.GPUClaimParametersSpec{
+		return gpuv1alpha1.GPUClaimParametersSpec{
 			Count: 1,
 		}, nil
 	}
@@ -84,7 +85,7 @@ func (d *driver) GetClaimParameters(
 	}
 
 	switch claim.Spec.ParametersRef.Kind {
-	case gpuapiv1alpha1.GPUClaimParametersKind:
+	case gpuv1alpha1.GPUClaimParametersKind:
 		rc, err := d.clientset.GpuV1alpha1().GPUClaimParameters(claim.Namespace).Get(ctx, claim.Spec.ParametersRef.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("error getting GPUClaimParameters called '%v' in namespace '%v': %v", claim.Spec.ParametersRef.Name, claim.Namespace, err)
@@ -122,14 +123,14 @@ func (d *driver) Allocate(ctx context.Context, claimAllocations []*dractrl.Claim
 
 		releaseClaim := make(chan struct{})
 		switch claimParams := claimAllocation.ClaimParameters.(type) {
-		case *gpuapiv1alpha1.GPUClaimParametersSpec:
-			claimParams, ok := claimAllocation.ClaimParameters.(*gpuapiv1alpha1.GPUClaimParametersSpec)
+		case *gpuv1alpha1.GPUClaimParametersSpec:
+			claimParams, ok := claimAllocation.ClaimParameters.(*gpuv1alpha1.GPUClaimParametersSpec)
 			if !ok {
 				claimAllocation.Error = fmt.Errorf("invalid GPU claim parameters")
 				continue
 			}
 
-			classParams, ok := claimAllocation.ClassParameters.(*gpuapiv1alpha1.GPUDeviceClassParametersSpec)
+			classParams, ok := claimAllocation.ClassParameters.(*gpuv1alpha1.GPUDeviceClassParametersSpec)
 			if !ok {
 				claimAllocation.Error = fmt.Errorf("invalid GPU class parameters")
 				continue
@@ -157,7 +158,7 @@ func (d *driver) Allocate(ctx context.Context, claimAllocations []*dractrl.Claim
 	}
 }
 
-func (d *driver) nodeDeviceAllocation(ctx context.Context, claim *resourcev1alpha2.ResourceClaim, selectedNode string) (*allocationapiv1alpha1.NodeDeviceAllocation, error) {
+func (d *driver) nodeDeviceAllocation(ctx context.Context, claim *resourcev1alpha2.ResourceClaim, selectedNode string) (*allocationv1alpha1.NodeDeviceAllocation, error) {
 	var (
 		namespace = claim.GetNamespace()
 		listOpts  = metav1.ListOptions{
@@ -175,12 +176,12 @@ func (d *driver) nodeDeviceAllocation(ctx context.Context, claim *resourcev1alph
 	}
 	deviceAllocation := deviceAllocations.Items[0]
 
-	if deviceAllocation.Status.State != allocationapiv1alpha1.Ready {
+	if deviceAllocation.Status.State != allocationv1alpha1.Ready {
 		return nil, fmt.Errorf("failed to allocate device: device allocation not ready")
 	}
 
 	if deviceAllocation.Status.AllocatedClaims == nil {
-		deviceAllocation.Status.AllocatedClaims = make(map[string]allocationapiv1alpha1.AllocatedDevices)
+		deviceAllocation.Status.AllocatedClaims = make(map[string]allocationv1alpha1.AllocatedDevices)
 	}
 
 	return deviceAllocation.DeepCopy(), nil
@@ -188,10 +189,10 @@ func (d *driver) nodeDeviceAllocation(ctx context.Context, claim *resourcev1alph
 
 func (d *driver) allocateGPU(
 	ctx context.Context,
-	deviceAllocation *allocationapiv1alpha1.NodeDeviceAllocation,
+	deviceAllocation *allocationv1alpha1.NodeDeviceAllocation,
 	claim *resourcev1alpha2.ResourceClaim,
-	claimParams *gpuapiv1alpha1.GPUClaimParametersSpec,
-	classParams *gpuapiv1alpha1.GPUDeviceClassParametersSpec,
+	claimParams *gpuv1alpha1.GPUClaimParametersSpec,
+	classParams *gpuv1alpha1.GPUDeviceClassParametersSpec,
 	selectedNode string,
 	releaseClaim <-chan struct{}) error {
 	claimUID := string(claim.GetUID())
@@ -213,6 +214,65 @@ func (d *driver) allocateGPU(
 
 // see https://pkg.go.dev/k8s.io/dynamic-resource-allocation/controller#Driver
 func (d *driver) Deallocate(ctx context.Context, claim *resourcev1alpha2.ResourceClaim) error {
+	if claim.Status.DriverName != d.GetName() {
+		return nil
+	}
+
+	selectedNode := getSelectedNode(claim)
+	if selectedNode == "" {
+		return nil
+	}
+
+	deviceAllocation, err := d.nodeDeviceAllocation(ctx, claim, selectedNode)
+	if err != nil {
+		return err
+	}
+
+	if deviceAllocation.Status.AllocatedClaims == nil {
+		return nil
+	}
+
+	claimUID := string(claim.GetUID())
+	allocatedDevices, exists := deviceAllocation.Status.AllocatedClaims[claimUID]
+	if !exists {
+		return nil
+	}
+
+	var errs error
+	if gpus := allocatedDevices.GPUs; gpus != nil {
+		for _, gpu := range gpus.Devices {
+			if err := d.deallocateGPU(ctx, claimUID, gpu); err != nil {
+				errs = errors.Join(errs, err)
+			}
+		}
+	}
+
+	if errs != nil {
+		return errs
+	}
+
+	delete(deviceAllocation.Status.AllocatedClaims, claimUID)
+
+	claimNamespace := claim.GetNamespace()
+	updateOpts := metav1.UpdateOptions{}
+	_, err = d.clientset.AllocationV1alpha1().NodeDeviceAllocations(claimNamespace).Update(ctx, deviceAllocation, updateOpts)
+	return err
+}
+
+func getSelectedNode(claim *resourcev1alpha2.ResourceClaim) string {
+	if claim.Status.Allocation == nil {
+		return ""
+	}
+
+	if claim.Status.Allocation.AvailableOnNodes == nil {
+		return ""
+	}
+
+	return claim.Status.Allocation.AvailableOnNodes.NodeSelectorTerms[0].MatchFields[0].Values[0]
+}
+
+func (d *driver) deallocateGPU(ctx context.Context, claimUID string, gpu allocationv1alpha1.AllocatedGPU) error {
+	d.gpu.removeAllocatedClaim(claimUID)
 	return nil
 }
 
@@ -221,7 +281,7 @@ func (d *driver) UnsuitableNodes(ctx context.Context, pod *corev1.Pod, claims []
 	return nil
 }
 
-func (d *driver) validateClaimParameters(claimParams *gpuapiv1alpha1.GPUClaimParametersSpec) error {
+func (d *driver) validateClaimParameters(claimParams *gpuv1alpha1.GPUClaimParametersSpec) error {
 	if claimParams.Count < 1 {
 		return fmt.Errorf("invalid number of GPUs requested: %v", claimParams.Count)
 	}
