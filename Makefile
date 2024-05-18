@@ -9,14 +9,17 @@ OPENAPI_GO_PKG := github.com/ihcsim/k8s-dra/pkg/openapi
 
 BOILERPLATE_FILE := hack/boilerplate.go.txt
 
-build: tidy
+build: tidy lint
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build ./...
 
-test: tidy
+test: tidy lint
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go test ./...
 
 tidy:
 	go mod tidy
+
+lint:
+	golangci-lint run ./...
 
 codegen:
 	rm -rf pkg/apis/applyconfiguration pkg/apis/clientset pkg/apis/informers pkg/apis/listers && \
