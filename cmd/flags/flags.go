@@ -15,6 +15,7 @@ func NewK8sFlags() *pflag.FlagSet {
 
 func NewControllerFlags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet("controller", pflag.ExitOnError)
+	flags.String("namespace", "k8s-dra", "Namespace where the controller watches for DeviceAllocation CRDs")
 	flags.Int("workers", 3, "Number of workers the controller spawns")
 	flags.Int("metrics-port", 9001, "HTTP port to expose metrics")
 	flags.String("metrics-path", "metrics", "HTTP path to expose metrics")

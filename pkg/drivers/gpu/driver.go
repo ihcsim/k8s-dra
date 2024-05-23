@@ -27,12 +27,16 @@ var _ dractrl.Driver = &driver{}
 // allocation and deallocation operations of GPU resources.
 type driver struct {
 	clientset clientset.Interface
-	gpu       GPUPlugin
+	gpu       gpuPlugin
+	namespace string
 }
 
 // NewDriver returns a new instance of the GPU driver.
-func NewDriver() *driver {
-	return &driver{}
+func NewDriver(namespace string) *driver {
+	return &driver{
+		gpu:       gpuPlugin{},
+		namespace: namespace,
+	}
 }
 
 // GetName returns the name of the driver.
@@ -125,13 +129,10 @@ func (d *driver) Allocate(ctx context.Context, claimAllocations []*dractrl.Claim
 	}
 }
 
-func (d *driver) nodeDeviceAllocation(ctx context.Context, claim *resourcev1alpha2.ResourceClaim, selectedNode string) (*allocationv1alpha1.NodeDeviceAllocation, error) {
-	var (
-		namespace = claim.GetNamespace()
-		listOpts  = metav1.ListOptions{
-			LabelSelector: "kubernetes.io/hostname=" + selectedNode,
-		}
-	)
+func (d *driver) nodeDeviceAllocation(ctx context.Context, namespace, selectedNode string) (*allocationv1alpha1.NodeDeviceAllocation, error) {
+	listOpts := metav1.ListOptions{
+		LabelSelector: "kubernetes.io/hostname=" + selectedNode,
+	}
 
 	deviceAllocations, err := d.clientset.AllocationV1alpha1().NodeDeviceAllocations(namespace).List(ctx, listOpts)
 	if err != nil {
@@ -164,7 +165,7 @@ func (d *driver) allocateGPU(
 		claimNamespace = claim.GetNamespace()
 	)
 
-	deviceAllocation, err := d.nodeDeviceAllocation(ctx, claim, selectedNode)
+	deviceAllocation, err := d.nodeDeviceAllocation(ctx, d.namespace, selectedNode)
 	if err != nil {
 		return err
 	}
@@ -210,7 +211,7 @@ func (d *driver) Deallocate(ctx context.Context, claim *resourcev1alpha2.Resourc
 		return nil
 	}
 
-	deviceAllocation, err := d.nodeDeviceAllocation(ctx, claim, selectedNode)
+	deviceAllocation, err := d.nodeDeviceAllocation(ctx, d.namespace, selectedNode)
 	if err != nil {
 		return err
 	}
@@ -265,7 +266,33 @@ func (d *driver) deallocateGPU(ctx context.Context, claimUID string, gpu allocat
 
 // see https://pkg.go.dev/k8s.io/dynamic-resource-allocation/controller#Driver
 func (d *driver) UnsuitableNodes(ctx context.Context, pod *corev1.Pod, claims []*dractrl.ClaimAllocation, potentialNodes []string) error {
-	return nil
+	var (
+		errs      error
+		gpuClaims = []*dractrl.ClaimAllocation{}
+	)
+	for _, potentialNode := range potentialNodes {
+		deviceAllocation, err := d.nodeDeviceAllocation(ctx, d.namespace, potentialNode)
+		if err != nil {
+			for _, claim := range claims {
+				claim.UnsuitableNodes = append(claim.UnsuitableNodes, potentialNode)
+			}
+			return nil
+		}
+
+		for _, claim := range claims {
+			if _, ok := claim.ClaimParameters.(*gpuv1alpha1.GPUClaimParameters); !ok {
+				errs = errors.Join(errs, fmt.Errorf("unsupported claim parameters kind: %T", claim.ClaimParameters))
+				continue
+			}
+			gpuClaims = append(gpuClaims, claim)
+		}
+
+		if err := d.gpu.unsuitableNode(deviceAllocation, pod, gpuClaims, claims, potentialNode); err != nil {
+			errs = errors.Join(errs, err)
+		}
+	}
+
+	return errs
 }
 
 func (d *driver) validateClaimParameters(claimParams *gpuv1alpha1.GPUClaimParametersSpec) error {

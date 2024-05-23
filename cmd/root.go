@@ -60,7 +60,7 @@ func run(ctx context.Context) error {
 		pprofPort   = viper.GetInt("pprof-port")
 		pprofPath   = "/debug/pprof/"
 
-		driver = gpu.NewDriver()
+		driver = gpu.NewDriver(viper.GetString("namespace"))
 	)
 
 	go func() {
