@@ -8,8 +8,9 @@ import (
 
 	"github.com/ihcsim/k8s-dra/pkg/apis"
 	allocationv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/allocation/v1alpha1"
-	clientset "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned"
+	draclientset "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned"
 	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
+	zlog "github.com/rs/zerolog"
 	corev1 "k8s.io/api/core/v1"
 	resourcev1alpha2 "k8s.io/api/resource/v1alpha2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,17 +27,20 @@ var _ dractrl.Driver = &driver{}
 // driver implements the controller.Driver interface, to provide the actual
 // allocation and deallocation operations of GPU resources.
 type driver struct {
-	clientset clientset.Interface
-	gpu       gpuPlugin
-	namespace string
+	clientsets draclientset.Interface
+	gpu        gpuPlugin
+	namespace  string
+	log        zlog.Logger
 }
 
 // NewDriver returns a new instance of the GPU driver.
-func NewDriver(namespace string) *driver {
+func NewDriver(clientsets draclientset.Interface, namespace string, log zlog.Logger) (*driver, error) {
 	return &driver{
-		gpu:       gpuPlugin{},
-		namespace: namespace,
-	}
+		clientsets: clientsets,
+		gpu:        gpuPlugin{},
+		namespace:  namespace,
+		log:        log,
+	}, nil
 }
 
 // GetName returns the name of the driver.
@@ -67,7 +71,7 @@ func (d *driver) GetClassParameters(ctx context.Context, class *resourcev1alpha2
 		return nil, fmt.Errorf("incorrect API group %s (vs. %s)", class.ParametersRef.APIGroup, apiGroup)
 	}
 
-	dc, err := d.clientset.GpuV1alpha1().GPUClassParameters().Get(ctx, class.ParametersRef.Name, metav1.GetOptions{})
+	dc, err := d.clientsets.GpuV1alpha1().GPUClassParameters().Get(ctx, class.ParametersRef.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error getting DeviceClassParameters called '%s': %w", class.ParametersRef.Name, err)
 	}
@@ -101,7 +105,7 @@ func (d *driver) GetClaimParameters(
 		return nil, fmt.Errorf("unsupported resource claim kind: %v", claim.Spec.ParametersRef.Kind)
 	}
 
-	rc, err := d.clientset.GpuV1alpha1().GPUClaimParameters(claim.Namespace).Get(ctx, claim.Spec.ParametersRef.Name, metav1.GetOptions{})
+	rc, err := d.clientsets.GpuV1alpha1().GPUClaimParameters(claim.Namespace).Get(ctx, claim.Spec.ParametersRef.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error getting GPUClaimParameters called '%v' in namespace '%v': %v", claim.Spec.ParametersRef.Name, claim.Namespace, err)
 	}
@@ -134,7 +138,7 @@ func (d *driver) nodeDeviceAllocation(ctx context.Context, namespace, selectedNo
 		LabelSelector: "kubernetes.io/hostname=" + selectedNode,
 	}
 
-	deviceAllocations, err := d.clientset.AllocationV1alpha1().NodeDeviceAllocations(namespace).List(ctx, listOpts)
+	deviceAllocations, err := d.clientsets.AllocationV1alpha1().NodeDeviceAllocations(namespace).List(ctx, listOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +201,7 @@ func (d *driver) allocateGPU(
 	deviceAllocation.Status.AllocatedClaims[claimUID] = allocatedClaims
 
 	updateOpts := metav1.UpdateOptions{}
-	if _, err := d.clientset.AllocationV1alpha1().NodeDeviceAllocations(claimNamespace).Update(ctx, deviceAllocation, updateOpts); err != nil {
+	if _, err := d.clientsets.AllocationV1alpha1().NodeDeviceAllocations(claimNamespace).Update(ctx, deviceAllocation, updateOpts); err != nil {
 		return err
 	}
 
@@ -240,7 +244,7 @@ func (d *driver) Deallocate(ctx context.Context, claim *resourcev1alpha2.Resourc
 
 	claimNamespace := claim.GetNamespace()
 	updateOpts := metav1.UpdateOptions{}
-	if _, err := d.clientset.AllocationV1alpha1().NodeDeviceAllocations(claimNamespace).Update(ctx, deviceAllocation, updateOpts); err != nil {
+	if _, err := d.clientsets.AllocationV1alpha1().NodeDeviceAllocations(claimNamespace).Update(ctx, deviceAllocation, updateOpts); err != nil {
 		return err
 	}
 

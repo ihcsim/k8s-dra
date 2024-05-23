@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/ihcsim/k8s-dra/cmd/flags"
+	draclientset "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned"
 	"github.com/ihcsim/k8s-dra/pkg/drivers/gpu"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
@@ -60,7 +61,7 @@ func run(ctx context.Context) error {
 		pprofPort   = viper.GetInt("pprof-port")
 		pprofPath   = "/debug/pprof/"
 
-		driver = gpu.NewDriver(viper.GetString("namespace"))
+		namespace = viper.GetString("namespace")
 	)
 
 	go func() {
@@ -79,7 +80,6 @@ func run(ctx context.Context) error {
 		}
 	}()
 
-	log.Info().Str("driver", driver.GetName()).Msg("starting driver controller")
 	log.Info().
 		Int("workers", workerCount).
 		Float64("qps", qps).
@@ -93,12 +93,23 @@ func run(ctx context.Context) error {
 		return err
 	}
 
+	draClientSets, err := draClientSets(kubeconfig)
+	if err != nil {
+		return err
+	}
+
 	var (
 		resync          = time.Minute * 10
 		informerFactory = informers.NewSharedInformerFactory(coreClientSets, resync)
 	)
-
 	informerFactory.Start(ctx.Done())
+
+	driver, err := gpu.NewDriver(draClientSets, namespace, log)
+	if err != nil {
+		return err
+	}
+
+	log.Info().Str("driver", driver.GetName()).Msg("starting driver controller")
 	ctrl := controller.New(ctx, driver.GetName(), driver, coreClientSets, informerFactory)
 	ctrl.Run(workerCount)
 	return nil
@@ -118,4 +129,13 @@ func coreClientSets(kubeconfigPath string) (coreclientset.Interface, error) {
 	}
 
 	return coreclientset.NewForConfig(kubecfg)
+}
+
+func draClientSets(kubeconfigPath string) (draclientset.Interface, error) {
+	kubecfg, err := kubeConfig(kubeconfigPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return draclientset.NewForConfig(kubecfg)
 }
