@@ -37,6 +37,7 @@ var (
 
 func init() {
 	log = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339})
+	log = log.With().Caller().Logger()
 
 	rootCmd.PersistentFlags().AddFlagSet(flags.NewK8sFlags())
 	rootCmd.PersistentFlags().AddFlagSet(flags.NewControllerFlags())
@@ -104,7 +105,8 @@ func run(ctx context.Context) error {
 	)
 	informerFactory.Start(ctx.Done())
 
-	driver, err := gpu.NewDriver(draClientSets, namespace, log)
+	dlog := log.With().Str("namespace", namespace).Logger()
+	driver, err := gpu.NewDriver(draClientSets, namespace, dlog)
 	if err != nil {
 		return err
 	}

@@ -11,12 +11,12 @@ type gpuPlugin struct{}
 
 func (p *gpuPlugin) pendingAllocatedClaims(
 	claimUID, selectedNode string,
-	claimParams *gpuv1alpha1.GPUClaimParameters,
-	classParams *gpuv1alpha1.GPUClassParameters) (allocationapiv1alpha1.AllocatedDevices, error) {
+	claimParams *gpuv1alpha1.GPUClaimParametersSpec,
+	classParams *gpuv1alpha1.GPUClassParametersSpec) (allocationapiv1alpha1.AllocatedDevices, error) {
 	return allocationapiv1alpha1.AllocatedDevices{}, nil
 }
 
-func (p *gpuPlugin) removeAllocatedClaim(claimUID string) error {
+func (p *gpuPlugin) removeAllocatedClaim(gpuUUID string) error {
 	return nil
 }
 
