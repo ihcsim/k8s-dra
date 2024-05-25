@@ -28,7 +28,7 @@ var _ dractrl.Driver = &driver{}
 // allocation and deallocation operations of GPU resources.
 type driver struct {
 	clientsets draclientset.Interface
-	gpu        gpuPlugin
+	gpu        *gpuPlugin
 	namespace  string
 	log        zlog.Logger
 }
@@ -37,7 +37,7 @@ type driver struct {
 func NewDriver(clientsets draclientset.Interface, namespace string, log zlog.Logger) (*driver, error) {
 	return &driver{
 		clientsets: clientsets,
-		gpu:        gpuPlugin{},
+		gpu:        newGPUPlugin(),
 		namespace:  namespace,
 		log:        log,
 	}, nil
@@ -179,7 +179,7 @@ func (d *driver) allocateGPU(
 		return fmt.Errorf("unsupported class parameters kind: %T", claimAllocation.ClassParameters)
 	}
 
-	allocatedClaims, err := d.gpu.pendingAllocatedClaims(
+	allocatedClaims, err := d.gpu.allocate(
 		claimUID,
 		selectedNode,
 		claimParams,
@@ -195,7 +195,7 @@ func (d *driver) allocateGPU(
 	}
 	log.Info().Msg("GPU allocation successful")
 
-	return d.gpu.removeAllocatedClaim(claimUID)
+	return d.gpu.deallocate(claimUID)
 }
 
 func (d *driver) nodeDeviceAllocation(ctx context.Context, namespace, selectedNode string) (*allocationv1alpha1.NodeDeviceAllocation, error) {
@@ -249,7 +249,7 @@ func (d *driver) Deallocate(ctx context.Context, claim *resourcev1alpha2.Resourc
 	if gpus := allocatedDevices.GPUs; gpus != nil {
 		for _, gpu := range gpus.Devices {
 			log.Info().Msg(fmt.Sprintf("deallocating GPU %s...", gpu.UUID))
-			if err := d.gpu.removeAllocatedClaim(gpu.UUID); err != nil {
+			if err := d.gpu.deallocate(gpu.UUID); err != nil {
 				errs = errors.Join(errs, err)
 			}
 		}
