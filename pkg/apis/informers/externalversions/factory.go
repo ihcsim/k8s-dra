@@ -24,7 +24,6 @@ import (
 	time "time"
 
 	versioned "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned"
-	allocation "github.com/ihcsim/k8s-dra/pkg/apis/informers/externalversions/allocation"
 	gpu "github.com/ihcsim/k8s-dra/pkg/apis/informers/externalversions/gpu"
 	internalinterfaces "github.com/ihcsim/k8s-dra/pkg/apis/informers/externalversions/internalinterfaces"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -254,12 +253,7 @@ type SharedInformerFactory interface {
 	// client.
 	InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer
 
-	Allocation() allocation.Interface
 	Gpu() gpu.Interface
-}
-
-func (f *sharedInformerFactory) Allocation() allocation.Interface {
-	return allocation.New(f, f.namespace, f.tweakListOptions)
 }
 
 func (f *sharedInformerFactory) Gpu() gpu.Interface {

@@ -3,6 +3,55 @@ package v1alpha1
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 // +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+// +k8s:openapi-gen=true
+// +kubebuilder:resource:scope=Namespaced
+
+// NodeDevices holds the availability and allocation states of GPUs
+// on a node. The name of the object is the name of the node.
+type NodeDevices struct {
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   NodeDevicesSpec   `json:"spec,omitempty"`
+	Status NodeDevicesStatus `json:"status,omitempty"`
+}
+
+// NodeDevicesSpec is the spec for the DeviceAllocation CRD.
+type NodeDevicesSpec struct {
+	AvailableGPUs []*GPUDevice `json:"availableGpus,omitempty"`
+}
+
+// DeviceAllocationState is the status for the DeviceAllocation CRD.
+type NodeDevicesStatus struct {
+	State         NodeDevicesAllocationState `json:"state"`
+	AllocatedGPUs map[string][]*GPUDevice    `json:"allocatedGpus,omitempty"`
+}
+
+type NodeDevicesAllocationState int
+
+const (
+	Ready NodeDevicesAllocationState = iota
+	NotReady
+)
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// NodeDevicesList represents a list of NodeDevices CRD objects.
+type NodeDevicesList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
+
+	Items []NodeDevices `json:"items"`
+}
+
+// GPUDevice represents an allocatable GPU device on a node.
+type GPUDevice struct {
+	UUID        string `json:"uuid"`
+	ProductName string `json:"productName"`
+}
+
+// +genclient
 // +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true

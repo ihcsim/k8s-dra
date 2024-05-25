@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/ihcsim/k8s-dra/pkg/apis"
-	allocationv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/allocation/v1alpha1"
 	draclientset "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned"
 	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
 	zlog "github.com/rs/zerolog"
@@ -153,18 +152,22 @@ func (d *driver) allocateGPU(
 	log.Info().Msg("allocating GPU...")
 
 	var (
-		claim          = claimAllocation.Claim
-		claimUID       = string(claim.GetUID())
-		claimNamespace = claim.GetNamespace()
+		claim    = claimAllocation.Claim
+		claimUID = string(claim.GetUID())
 	)
 
-	deviceAllocation, err := d.nodeDeviceAllocation(ctx, d.namespace, selectedNode)
+	getOpts := metav1.GetOptions{}
+	nodeDevices, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Get(ctx, selectedNode, getOpts)
 	if err != nil {
 		return err
 	}
-	log = log.With().Str("deviceAllocation", deviceAllocation.GetName()).Str("claimUID", claimUID).Logger()
+	log = log.With().Str("nodeDevices", nodeDevices.GetName()).Str("claimUID", claimUID).Logger()
 
-	if _, exists := deviceAllocation.Status.AllocatedClaims[claimUID]; exists {
+	if nodeDevices.Status.AllocatedGPUs == nil {
+		nodeDevices.Status.AllocatedGPUs = map[string][]*gpuv1alpha1.GPUDevice{}
+	}
+
+	if _, exists := nodeDevices.Status.AllocatedGPUs[claimUID]; exists {
 		log.Info().Msg("on-going allocation already exists, let it finish")
 		return nil
 	}
@@ -179,41 +182,19 @@ func (d *driver) allocateGPU(
 		return fmt.Errorf("unsupported class parameters kind: %T", claimAllocation.ClassParameters)
 	}
 
-	allocatedClaims, err := d.gpu.allocate(
-		claimUID,
-		selectedNode,
-		claimParams,
-		classParams)
+	allocatedGPUs, err := d.gpu.allocate(claimUID, selectedNode, claimParams, classParams)
 	if err != nil {
 		return err
 	}
-	deviceAllocation.Status.AllocatedClaims[claimUID] = allocatedClaims
+	nodeDevices.Status.AllocatedGPUs[claimUID] = allocatedGPUs
 
 	updateOpts := metav1.UpdateOptions{}
-	if _, err := d.clientsets.AllocationV1alpha1().NodeDeviceAllocations(claimNamespace).Update(ctx, deviceAllocation, updateOpts); err != nil {
+	if _, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Update(ctx, nodeDevices, updateOpts); err != nil {
 		return err
 	}
 	log.Info().Msg("GPU allocation successful")
 
-	return d.gpu.deallocate(claimUID)
-}
-
-func (d *driver) nodeDeviceAllocation(ctx context.Context, namespace, selectedNode string) (*allocationv1alpha1.NodeDeviceAllocation, error) {
-	getOpts := metav1.GetOptions{}
-	deviceAllocation, err := d.clientsets.AllocationV1alpha1().NodeDeviceAllocations(namespace).Get(ctx, selectedNode, getOpts)
-	if err != nil {
-		return nil, err
-	}
-
-	if deviceAllocation.Status.State != allocationv1alpha1.Ready {
-		return nil, fmt.Errorf("failed to allocate device: device allocation not ready")
-	}
-
-	if deviceAllocation.Status.AllocatedClaims == nil {
-		deviceAllocation.Status.AllocatedClaims = make(map[string]allocationv1alpha1.AllocatedDevices)
-	}
-
-	return deviceAllocation.DeepCopy(), nil
+	return d.gpu.deallocate(claimUID, selectedNode)
 }
 
 // Deallocate gets called when a ResourceClaim is ready to be freed.
@@ -227,45 +208,37 @@ func (d *driver) Deallocate(ctx context.Context, claim *resourcev1alpha2.Resourc
 		return nil
 	}
 
-	deviceAllocation, err := d.nodeDeviceAllocation(ctx, d.namespace, selectedNode)
+	getOpts := metav1.GetOptions{}
+	nodeDevices, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Get(ctx, selectedNode, getOpts)
 	if err != nil {
 		return err
 	}
 
-	if deviceAllocation.Status.AllocatedClaims == nil {
+	if nodeDevices.Status.AllocatedGPUs == nil {
+		d.log.Info().Msg("no GPUs allocated, skipping deallocation")
 		return nil
 	}
 
 	claimUID := string(claim.GetUID())
-	log := d.log.With().Str("selectedNode", selectedNode).Str("deviceAllocation", deviceAllocation.GetName()).Str("claimUID", claimUID).Logger()
+	log := d.log.With().Str("selectedNode", selectedNode).Str("nodeDevices", nodeDevices.GetName()).Str("claimUID", claimUID).Logger()
 
-	allocatedDevices, exists := deviceAllocation.Status.AllocatedClaims[claimUID]
-	if !exists {
+	if _, exists := nodeDevices.Status.AllocatedGPUs[claimUID]; !exists {
 		log.Info().Msg("no allocated claims found, skipping deallocation")
 		return nil
 	}
 
-	var errs error
-	if gpus := allocatedDevices.GPUs; gpus != nil {
-		for _, gpu := range gpus.Devices {
-			log.Info().Msg(fmt.Sprintf("deallocating GPU %s...", gpu.UUID))
-			if err := d.gpu.deallocate(gpu.UUID); err != nil {
-				errs = errors.Join(errs, err)
-			}
-		}
-	}
-	if errs != nil {
-		return errs
-	}
-
-	claimNamespace := claim.GetNamespace()
-	updateOpts := metav1.UpdateOptions{}
-	if _, err := d.clientsets.AllocationV1alpha1().NodeDeviceAllocations(claimNamespace).Update(ctx, deviceAllocation, updateOpts); err != nil {
+	log.Info().Msg("deallocating claimed GPUs...")
+	if err := d.gpu.deallocate(claimUID, selectedNode); err != nil {
 		return err
 	}
+
+	updateOpts := metav1.UpdateOptions{}
+	if _, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Update(ctx, nodeDevices, updateOpts); err != nil {
+		return err
+	}
+	delete(nodeDevices.Status.AllocatedGPUs, claimUID)
 	log.Info().Msg("deallocation completed successfully")
 
-	delete(deviceAllocation.Status.AllocatedClaims, claimUID)
 	return nil
 }
 
@@ -291,7 +264,8 @@ func (d *driver) UnsuitableNodes(ctx context.Context, pod *corev1.Pod, claims []
 		gpuClaims = []*dractrl.ClaimAllocation{}
 	)
 	for _, potentialNode := range potentialNodes {
-		deviceAllocation, err := d.nodeDeviceAllocation(ctx, d.namespace, potentialNode)
+		getOpts := metav1.GetOptions{}
+		nodeDevices, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Get(ctx, potentialNode, getOpts)
 		if err != nil {
 			for _, claim := range claims {
 				claim.UnsuitableNodes = append(claim.UnsuitableNodes, potentialNode)
@@ -307,7 +281,7 @@ func (d *driver) UnsuitableNodes(ctx context.Context, pod *corev1.Pod, claims []
 			gpuClaims = append(gpuClaims, claim)
 		}
 
-		if err := d.gpu.unsuitableNode(deviceAllocation, pod, gpuClaims, claims, potentialNode); err != nil {
+		if err := d.gpu.unsuitableNode(nodeDevices, pod, gpuClaims, claims, potentialNode); err != nil {
 			errs = errors.Join(errs, err)
 		}
 	}

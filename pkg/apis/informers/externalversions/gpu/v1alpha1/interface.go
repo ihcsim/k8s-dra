@@ -28,6 +28,8 @@ type Interface interface {
 	GPUClaimParameters() GPUClaimParametersInformer
 	// GPUClassParameters returns a GPUClassParametersInformer.
 	GPUClassParameters() GPUClassParametersInformer
+	// NodeDevices returns a NodeDevicesInformer.
+	NodeDevices() NodeDevicesInformer
 }
 
 type version struct {
@@ -49,4 +51,9 @@ func (v *version) GPUClaimParameters() GPUClaimParametersInformer {
 // GPUClassParameters returns a GPUClassParametersInformer.
 func (v *version) GPUClassParameters() GPUClassParametersInformer {
 	return &gPUClassParametersInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
+}
+
+// NodeDevices returns a NodeDevicesInformer.
+func (v *version) NodeDevices() NodeDevicesInformer {
+	return &nodeDevicesInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

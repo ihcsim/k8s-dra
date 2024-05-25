@@ -29,3 +29,11 @@ type GPUClaimParametersNamespaceListerExpansion interface{}
 // GPUClassParametersListerExpansion allows custom methods to be added to
 // GPUClassParametersLister.
 type GPUClassParametersListerExpansion interface{}
+
+// NodeDevicesListerExpansion allows custom methods to be added to
+// NodeDevicesLister.
+type NodeDevicesListerExpansion interface{}
+
+// NodeDevicesNamespaceListerExpansion allows custom methods to be added to
+// NodeDevicesNamespaceLister.
+type NodeDevicesNamespaceListerExpansion interface{}

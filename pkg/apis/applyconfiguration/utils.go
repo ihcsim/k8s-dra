@@ -19,10 +19,8 @@ limitations under the License.
 package applyconfiguration
 
 import (
-	v1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/allocation/v1alpha1"
-	allocationv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/applyconfiguration/allocation/v1alpha1"
-	applyconfigurationgpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/applyconfiguration/gpu/v1alpha1"
-	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
+	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/applyconfiguration/gpu/v1alpha1"
+	v1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -30,39 +28,25 @@ import (
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=allocation, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithKind("AllocatableDevice"):
-		return &allocationv1alpha1.AllocatableDeviceApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("AllocatableGPU"):
-		return &allocationv1alpha1.AllocatableGPUApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("AllocatedDevices"):
-		return &allocationv1alpha1.AllocatedDevicesApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("AllocatedGPU"):
-		return &allocationv1alpha1.AllocatedGPUApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("AllocatedGPUs"):
-		return &allocationv1alpha1.AllocatedGPUsApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("NodeDeviceAllocation"):
-		return &allocationv1alpha1.NodeDeviceAllocationApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("NodeDeviceAllocationStatus"):
-		return &allocationv1alpha1.NodeDeviceAllocationStatusApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("PreparedDevices"):
-		return &allocationv1alpha1.PreparedDevicesApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("PreparedGPU"):
-		return &allocationv1alpha1.PreparedGPUApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("PreparedGPUs"):
-		return &allocationv1alpha1.PreparedGPUsApplyConfiguration{}
-
-		// Group=gpu, Version=v1alpha1
-	case gpuv1alpha1.SchemeGroupVersion.WithKind("DeviceSelector"):
-		return &applyconfigurationgpuv1alpha1.DeviceSelectorApplyConfiguration{}
-	case gpuv1alpha1.SchemeGroupVersion.WithKind("GPUClaimParameters"):
-		return &applyconfigurationgpuv1alpha1.GPUClaimParametersApplyConfiguration{}
-	case gpuv1alpha1.SchemeGroupVersion.WithKind("GPUClaimParametersSpec"):
-		return &applyconfigurationgpuv1alpha1.GPUClaimParametersSpecApplyConfiguration{}
-	case gpuv1alpha1.SchemeGroupVersion.WithKind("GPUClassParameters"):
-		return &applyconfigurationgpuv1alpha1.GPUClassParametersApplyConfiguration{}
-	case gpuv1alpha1.SchemeGroupVersion.WithKind("GPUClassParametersSpec"):
-		return &applyconfigurationgpuv1alpha1.GPUClassParametersSpecApplyConfiguration{}
+	// Group=gpu, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithKind("DeviceSelector"):
+		return &gpuv1alpha1.DeviceSelectorApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("GPUClaimParameters"):
+		return &gpuv1alpha1.GPUClaimParametersApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("GPUClaimParametersSpec"):
+		return &gpuv1alpha1.GPUClaimParametersSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("GPUClassParameters"):
+		return &gpuv1alpha1.GPUClassParametersApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("GPUClassParametersSpec"):
+		return &gpuv1alpha1.GPUClassParametersSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("GPUDevice"):
+		return &gpuv1alpha1.GPUDeviceApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("NodeDevices"):
+		return &gpuv1alpha1.NodeDevicesApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("NodeDevicesSpec"):
+		return &gpuv1alpha1.NodeDevicesSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("NodeDevicesStatus"):
+		return &gpuv1alpha1.NodeDevicesStatusApplyConfiguration{}
 
 	}
 	return nil

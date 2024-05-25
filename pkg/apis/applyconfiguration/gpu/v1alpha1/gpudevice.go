@@ -18,23 +18,23 @@ limitations under the License.
 
 package v1alpha1
 
-// AllocatableGPUApplyConfiguration represents an declarative configuration of the AllocatableGPU type for use
+// GPUDeviceApplyConfiguration represents an declarative configuration of the GPUDevice type for use
 // with apply.
-type AllocatableGPUApplyConfiguration struct {
+type GPUDeviceApplyConfiguration struct {
 	UUID        *string `json:"uuid,omitempty"`
 	ProductName *string `json:"productName,omitempty"`
 }
 
-// AllocatableGPUApplyConfiguration constructs an declarative configuration of the AllocatableGPU type for use with
+// GPUDeviceApplyConfiguration constructs an declarative configuration of the GPUDevice type for use with
 // apply.
-func AllocatableGPU() *AllocatableGPUApplyConfiguration {
-	return &AllocatableGPUApplyConfiguration{}
+func GPUDevice() *GPUDeviceApplyConfiguration {
+	return &GPUDeviceApplyConfiguration{}
 }
 
 // WithUUID sets the UUID field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the UUID field is set to the value of the last call.
-func (b *AllocatableGPUApplyConfiguration) WithUUID(value string) *AllocatableGPUApplyConfiguration {
+func (b *GPUDeviceApplyConfiguration) WithUUID(value string) *GPUDeviceApplyConfiguration {
 	b.UUID = &value
 	return b
 }
@@ -42,7 +42,7 @@ func (b *AllocatableGPUApplyConfiguration) WithUUID(value string) *AllocatableGP
 // WithProductName sets the ProductName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ProductName field is set to the value of the last call.
-func (b *AllocatableGPUApplyConfiguration) WithProductName(value string) *AllocatableGPUApplyConfiguration {
+func (b *GPUDeviceApplyConfiguration) WithProductName(value string) *GPUDeviceApplyConfiguration {
 	b.ProductName = &value
 	return b
 }

@@ -19,36 +19,35 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/allocation/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// NodeDeviceAllocationApplyConfiguration represents an declarative configuration of the NodeDeviceAllocation type for use
+// NodeDevicesApplyConfiguration represents an declarative configuration of the NodeDevices type for use
 // with apply.
-type NodeDeviceAllocationApplyConfiguration struct {
+type NodeDevicesApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *v1alpha1.NodeDeviceAllocationSpec            `json:"spec,omitempty"`
-	Status                           *NodeDeviceAllocationStatusApplyConfiguration `json:"status,omitempty"`
+	Spec                             *NodeDevicesSpecApplyConfiguration   `json:"spec,omitempty"`
+	Status                           *NodeDevicesStatusApplyConfiguration `json:"status,omitempty"`
 }
 
-// NodeDeviceAllocation constructs an declarative configuration of the NodeDeviceAllocation type for use with
+// NodeDevices constructs an declarative configuration of the NodeDevices type for use with
 // apply.
-func NodeDeviceAllocation(name, namespace string) *NodeDeviceAllocationApplyConfiguration {
-	b := &NodeDeviceAllocationApplyConfiguration{}
+func NodeDevices(name, namespace string) *NodeDevicesApplyConfiguration {
+	b := &NodeDevicesApplyConfiguration{}
 	b.WithName(name)
 	b.WithNamespace(namespace)
-	b.WithKind("NodeDeviceAllocation")
-	b.WithAPIVersion("allocation/v1alpha1")
+	b.WithKind("NodeDevices")
+	b.WithAPIVersion("gpu/v1alpha1")
 	return b
 }
 
 // WithKind sets the Kind field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Kind field is set to the value of the last call.
-func (b *NodeDeviceAllocationApplyConfiguration) WithKind(value string) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithKind(value string) *NodeDevicesApplyConfiguration {
 	b.Kind = &value
 	return b
 }
@@ -56,7 +55,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithKind(value string) *NodeDev
 // WithAPIVersion sets the APIVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the APIVersion field is set to the value of the last call.
-func (b *NodeDeviceAllocationApplyConfiguration) WithAPIVersion(value string) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithAPIVersion(value string) *NodeDevicesApplyConfiguration {
 	b.APIVersion = &value
 	return b
 }
@@ -64,7 +63,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithAPIVersion(value string) *N
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *NodeDeviceAllocationApplyConfiguration) WithName(value string) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithName(value string) *NodeDevicesApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Name = &value
 	return b
@@ -73,7 +72,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithName(value string) *NodeDev
 // WithGenerateName sets the GenerateName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the GenerateName field is set to the value of the last call.
-func (b *NodeDeviceAllocationApplyConfiguration) WithGenerateName(value string) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithGenerateName(value string) *NodeDevicesApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.GenerateName = &value
 	return b
@@ -82,7 +81,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithGenerateName(value string) 
 // WithNamespace sets the Namespace field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Namespace field is set to the value of the last call.
-func (b *NodeDeviceAllocationApplyConfiguration) WithNamespace(value string) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithNamespace(value string) *NodeDevicesApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Namespace = &value
 	return b
@@ -91,7 +90,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithNamespace(value string) *No
 // WithUID sets the UID field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the UID field is set to the value of the last call.
-func (b *NodeDeviceAllocationApplyConfiguration) WithUID(value types.UID) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithUID(value types.UID) *NodeDevicesApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.UID = &value
 	return b
@@ -100,7 +99,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithUID(value types.UID) *NodeD
 // WithResourceVersion sets the ResourceVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ResourceVersion field is set to the value of the last call.
-func (b *NodeDeviceAllocationApplyConfiguration) WithResourceVersion(value string) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithResourceVersion(value string) *NodeDevicesApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ResourceVersion = &value
 	return b
@@ -109,7 +108,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithResourceVersion(value strin
 // WithGeneration sets the Generation field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Generation field is set to the value of the last call.
-func (b *NodeDeviceAllocationApplyConfiguration) WithGeneration(value int64) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithGeneration(value int64) *NodeDevicesApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Generation = &value
 	return b
@@ -118,7 +117,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithGeneration(value int64) *No
 // WithCreationTimestamp sets the CreationTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CreationTimestamp field is set to the value of the last call.
-func (b *NodeDeviceAllocationApplyConfiguration) WithCreationTimestamp(value metav1.Time) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithCreationTimestamp(value metav1.Time) *NodeDevicesApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.CreationTimestamp = &value
 	return b
@@ -127,7 +126,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithCreationTimestamp(value met
 // WithDeletionTimestamp sets the DeletionTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionTimestamp field is set to the value of the last call.
-func (b *NodeDeviceAllocationApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *NodeDevicesApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.DeletionTimestamp = &value
 	return b
@@ -136,7 +135,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithDeletionTimestamp(value met
 // WithDeletionGracePeriodSeconds sets the DeletionGracePeriodSeconds field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionGracePeriodSeconds field is set to the value of the last call.
-func (b *NodeDeviceAllocationApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *NodeDevicesApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.DeletionGracePeriodSeconds = &value
 	return b
@@ -146,7 +145,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithDeletionGracePeriodSeconds(
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Labels field,
 // overwriting an existing map entries in Labels field with the same key.
-func (b *NodeDeviceAllocationApplyConfiguration) WithLabels(entries map[string]string) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithLabels(entries map[string]string) *NodeDevicesApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.Labels == nil && len(entries) > 0 {
 		b.Labels = make(map[string]string, len(entries))
@@ -161,7 +160,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithLabels(entries map[string]s
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Annotations field,
 // overwriting an existing map entries in Annotations field with the same key.
-func (b *NodeDeviceAllocationApplyConfiguration) WithAnnotations(entries map[string]string) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithAnnotations(entries map[string]string) *NodeDevicesApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.Annotations == nil && len(entries) > 0 {
 		b.Annotations = make(map[string]string, len(entries))
@@ -175,7 +174,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithAnnotations(entries map[str
 // WithOwnerReferences adds the given value to the OwnerReferences field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the OwnerReferences field.
-func (b *NodeDeviceAllocationApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *NodeDevicesApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		if values[i] == nil {
@@ -189,7 +188,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithOwnerReferences(values ...*
 // WithFinalizers adds the given value to the Finalizers field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Finalizers field.
-func (b *NodeDeviceAllocationApplyConfiguration) WithFinalizers(values ...string) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithFinalizers(values ...string) *NodeDevicesApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		b.Finalizers = append(b.Finalizers, values[i])
@@ -197,7 +196,7 @@ func (b *NodeDeviceAllocationApplyConfiguration) WithFinalizers(values ...string
 	return b
 }
 
-func (b *NodeDeviceAllocationApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
+func (b *NodeDevicesApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
 	if b.ObjectMetaApplyConfiguration == nil {
 		b.ObjectMetaApplyConfiguration = &v1.ObjectMetaApplyConfiguration{}
 	}
@@ -206,15 +205,15 @@ func (b *NodeDeviceAllocationApplyConfiguration) ensureObjectMetaApplyConfigurat
 // WithSpec sets the Spec field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Spec field is set to the value of the last call.
-func (b *NodeDeviceAllocationApplyConfiguration) WithSpec(value v1alpha1.NodeDeviceAllocationSpec) *NodeDeviceAllocationApplyConfiguration {
-	b.Spec = &value
+func (b *NodeDevicesApplyConfiguration) WithSpec(value *NodeDevicesSpecApplyConfiguration) *NodeDevicesApplyConfiguration {
+	b.Spec = value
 	return b
 }
 
 // WithStatus sets the Status field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Status field is set to the value of the last call.
-func (b *NodeDeviceAllocationApplyConfiguration) WithStatus(value *NodeDeviceAllocationStatusApplyConfiguration) *NodeDeviceAllocationApplyConfiguration {
+func (b *NodeDevicesApplyConfiguration) WithStatus(value *NodeDevicesStatusApplyConfiguration) *NodeDevicesApplyConfiguration {
 	b.Status = value
 	return b
 }

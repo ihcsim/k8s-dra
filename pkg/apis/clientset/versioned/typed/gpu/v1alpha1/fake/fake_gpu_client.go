@@ -36,6 +36,10 @@ func (c *FakeGpuV1alpha1) GPUClassParameters() v1alpha1.GPUClassParametersInterf
 	return &FakeGPUClassParameters{c}
 }
 
+func (c *FakeGpuV1alpha1) NodeDevices(namespace string) v1alpha1.NodeDevicesInterface {
+	return &FakeNodeDevices{c, namespace}
+}
+
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
 func (c *FakeGpuV1alpha1) RESTClient() rest.Interface {
