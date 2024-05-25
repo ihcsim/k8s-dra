@@ -1,11 +1,11 @@
 package gpu
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 
 	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
+	zlog "github.com/rs/zerolog"
 	corev1 "k8s.io/api/core/v1"
 	dractrl "k8s.io/dynamic-resource-allocation/controller"
 )
@@ -17,6 +17,8 @@ type gpuPlugin struct {
 
 	// mux is used to synchronized concurrent read-write accesses to allocations.
 	mux sync.RWMutex
+
+	log zlog.Logger
 }
 
 type nodeClaim struct {
@@ -28,17 +30,18 @@ func (n *nodeClaim) String() string {
 	return fmt.Sprintf("%s/%s", n.nodeName, n.claimUID)
 }
 
-func newGPUPlugin() *gpuPlugin {
+func newGPUPlugin(log zlog.Logger) *gpuPlugin {
 	return &gpuPlugin{
 		pendingAllocatedGPUs: map[nodeClaim][]*gpuv1alpha1.GPUDevice{},
 		mux:                  sync.RWMutex{},
+		log:                  log,
 	}
 }
 
 func (p *gpuPlugin) allocate(
 	claimUID, nodeName string,
 	claimParams *gpuv1alpha1.GPUClaimParametersSpec,
-	classParams *gpuv1alpha1.GPUClassParametersSpec) ([]*gpuv1alpha1.GPUDevice, error) {
+	classParams *gpuv1alpha1.GPUClassParametersSpec) ([]*gpuv1alpha1.GPUDevice, func() error, error) {
 	p.mux.RLock()
 	defer p.mux.RUnlock()
 
@@ -46,16 +49,18 @@ func (p *gpuPlugin) allocate(
 		claimUID: claimUID,
 		nodeName: nodeName,
 	}
-	if _, exists := p.pendingAllocatedGPUs[nodeClaim]; !exists {
-		return nil, fmt.Errorf("no allocations generated for node claim %s", nodeClaim)
-	}
-
 	allocatedGPUs, exists := p.pendingAllocatedGPUs[nodeClaim]
 	if !exists {
-		return nil, fmt.Errorf("no allocations generated for node claim %s", nodeClaim)
+		return nil, nil, fmt.Errorf("no allocations generated for node claim %s", nodeClaim)
 	}
 
-	return allocatedGPUs, nil
+	// once the allocation is committed on K8s side, remove the devices from the
+	// pending list
+	commitAllocation := func() error {
+		return p.deallocate(claimUID, nodeName)
+	}
+
+	return allocatedGPUs, commitAllocation, nil
 }
 
 func (p *gpuPlugin) deallocate(claimUID, nodeName string) error {
@@ -73,39 +78,34 @@ func (p *gpuPlugin) deallocate(claimUID, nodeName string) error {
 func (p *gpuPlugin) unsuitableNode(
 	nodeDevices *gpuv1alpha1.NodeDevices,
 	pod *corev1.Pod,
-	gpuClaims []*dractrl.ClaimAllocation,
-	allClaims []*dractrl.ClaimAllocation,
+	claims []*dractrl.ClaimAllocation,
 	potentialNode string) error {
 	p.mux.Lock()
 	defer p.mux.Unlock()
 
-	var errs error
-	for nodeClaim := range p.pendingAllocatedGPUs {
-		if allocation, exists := p.pendingAllocatedGPUs[nodeClaim]; exists {
-			claimUID := nodeClaim.claimUID
-			if _, exists := nodeDevices.Status.AllocatedGPUs[claimUID]; exists {
-				if err := p.deallocate(claimUID, potentialNode); err != nil {
-					errs = errors.Join(errs, err)
-					continue
-				}
-			} else {
-				nodeDevices.Status.AllocatedGPUs[claimUID] = allocation
-			}
+	gpuClaims := []*dractrl.ClaimAllocation{}
+	for _, claim := range claims {
+		if _, ok := claim.ClaimParameters.(*gpuv1alpha1.GPUClaimParametersSpec); !ok {
+			p.log.Info().Msgf("skipping unsupported claim parameters kind: %T", claim.ClaimParameters)
+			continue
 		}
-	}
-	if errs != nil {
-		return errs
+		gpuClaims = append(gpuClaims, claim)
 	}
 
 	availableGPUs := p.availableGPUs(nodeDevices)
 	allocatedGPUs := map[string][]string{}
 	for _, gpuClaim := range gpuClaims {
+		nodeClaim := nodeClaim{
+			claimUID: string(gpuClaim.Claim.GetUID()),
+			nodeName: potentialNode,
+		}
+
 		// if the nodeDevices has already allocated GPUs for the claim, add the
 		// allocated GPUs to the result map
-		claimUID := string(gpuClaim.Claim.GetUID())
-		if gpus, exists := nodeDevices.Status.AllocatedGPUs[claimUID]; exists {
+		if gpus, exists := p.pendingAllocatedGPUs[nodeClaim]; exists {
+			nodeDevices.Status.AllocatedGPUs[nodeClaim.claimUID] = gpus
 			for _, gpu := range gpus {
-				allocatedGPUs[claimUID] = append(allocatedGPUs[claimUID], gpu.UUID)
+				allocatedGPUs[nodeClaim.claimUID] = append(allocatedGPUs[nodeClaim.claimUID], gpu.UUID)
 			}
 			continue
 		}
@@ -113,40 +113,35 @@ func (p *gpuPlugin) unsuitableNode(
 		// otherwise, allocate up to claimParams.Count GPUs from the available pool
 		claimParams, ok := gpuClaim.ClaimParameters.(*gpuv1alpha1.GPUClaimParametersSpec)
 		if !ok {
-			errs = errors.Join(errs, fmt.Errorf("failed to cast claim parameters to GPUClaimParametersSpec"))
+			p.log.Info().Msgf("skipping unsupported claim parameters kind: %T", gpuClaim.ClaimParameters)
 			continue
 		}
 		for _, gpu := range availableGPUs {
-			allocatedGPUs[claimUID] = append(allocatedGPUs[claimUID], gpu.UUID)
-			if len(allocatedGPUs[claimUID]) >= claimParams.Count {
+			allocatedGPUs[nodeClaim.claimUID] = append(allocatedGPUs[nodeClaim.claimUID], gpu.UUID)
+			if len(allocatedGPUs[nodeClaim.claimUID]) >= claimParams.Count {
 				break
 			}
 		}
 
 		// if the number of allocated GPUs is less than the requested count, mark the node as
 		// unsuitable
-		if claimParams.Count != len(allocatedGPUs[claimUID]) {
-			for _, claim := range allClaims {
-				claim.UnsuitableNodes = append(claim.UnsuitableNodes, potentialNode)
-			}
-			return nil
+		if claimParams.Count != len(allocatedGPUs[nodeClaim.claimUID]) {
+			p.log.Info().Msgf("insufficient GPUs on node %s for claim %s, marking node as unsuitable", potentialNode, nodeClaim.claimUID)
+			gpuClaim.UnsuitableNodes = append(gpuClaim.UnsuitableNodes, potentialNode)
+			continue
 		}
 
 		// otherwise, potentialNode is a suitable node
-		nodeClaim := nodeClaim{
-			claimUID: claimUID,
-			nodeName: potentialNode,
-		}
 		if _, exists := p.pendingAllocatedGPUs[nodeClaim]; !exists {
 			p.pendingAllocatedGPUs[nodeClaim] = []*gpuv1alpha1.GPUDevice{}
 		}
-		for _, gpu := range allocatedGPUs[claimUID] {
+		for _, gpu := range allocatedGPUs[nodeClaim.claimUID] {
 			allocatedGPU := &gpuv1alpha1.GPUDevice{UUID: gpu}
 			p.pendingAllocatedGPUs[nodeClaim] = append(p.pendingAllocatedGPUs[nodeClaim], allocatedGPU)
 		}
 	}
 
-	return errs
+	return nil
 }
 
 func (p *gpuPlugin) availableGPUs(nodeDevices *gpuv1alpha1.NodeDevices) map[string]*gpuv1alpha1.GPUDevice {
