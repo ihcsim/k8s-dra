@@ -22,3 +22,9 @@ func NewControllerFlags() *pflag.FlagSet {
 	flags.Int("pprof-port", 9002, "HTTP port to expose pprof endpoints")
 	return flags
 }
+
+func NewPluginFlags() *pflag.FlagSet {
+	flags := pflag.NewFlagSet("plugin", pflag.ExitOnError)
+	flags.String("cdi-root", "/etc/cdi", "Absolute path to the directory where CDI files will be generated")
+	return flags
+}
