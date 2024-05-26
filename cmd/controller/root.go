@@ -1,19 +1,17 @@
-package cmd
+package main
 
 import (
 	"context"
 	"fmt"
 	"net/http"
 	"net/http/pprof"
-	"os"
 	"time"
 
 	"github.com/ihcsim/k8s-dra/cmd/flags"
 	draclientset "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned"
 	"github.com/ihcsim/k8s-dra/pkg/drivers/gpu"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/rs/zerolog"
-	zlog "github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/informers"
@@ -24,8 +22,6 @@ import (
 )
 
 var (
-	log = zlog.Logger
-
 	rootCmd = &cobra.Command{
 		Use:   "dra-ctrl",
 		Short: "dra-ctrl implements a Kubernetes DRA driver controller",
@@ -36,9 +32,6 @@ var (
 )
 
 func init() {
-	log = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339})
-	log = log.With().Caller().Logger()
-
 	rootCmd.PersistentFlags().AddFlagSet(flags.NewK8sFlags())
 	rootCmd.PersistentFlags().AddFlagSet(flags.NewControllerFlags())
 	if err := viper.BindPFlags(rootCmd.PersistentFlags()); err != nil {
@@ -46,7 +39,7 @@ func init() {
 	}
 }
 
-func ExecuteContext(ctx context.Context) error {
+func executeContext(ctx context.Context) error {
 	return rootCmd.ExecuteContext(ctx)
 }
 
@@ -105,8 +98,8 @@ func run(ctx context.Context) error {
 	)
 	informerFactory.Start(ctx.Done())
 
-	dlog := log.With().Str("namespace", namespace).Logger()
-	driver, err := gpu.NewDriver(draClientSets, namespace, dlog)
+	driverLog := log.Logger.With().Str("namespace", namespace).Logger()
+	driver, err := gpu.NewDriver(draClientSets, namespace, driverLog)
 	if err != nil {
 		return err
 	}

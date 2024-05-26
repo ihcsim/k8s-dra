@@ -2,14 +2,24 @@ package main
 
 import (
 	"context"
+	"os"
+	"time"
 
-	"github.com/ihcsim/k8s-dra/cmd"
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
+func init() {
+	console := zerolog.ConsoleWriter{
+		Out:        os.Stderr,
+		TimeFormat: time.RFC3339,
+	}
+	log.Logger = log.Logger.Output(console).With().Caller().Logger()
+}
+
 func main() {
 	ctx := context.Background()
-	if err := cmd.ExecuteContext(ctx); err != nil {
+	if err := executeContext(ctx); err != nil {
 		log.Fatal().Err(err).Msg("failed to execute command")
 	}
 }
