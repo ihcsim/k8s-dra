@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/ihcsim/k8s-dra/cmd/flags"
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -21,7 +22,7 @@ var (
 func init() {
 	rootCmd.PersistentFlags().AddFlagSet(flags.NewK8sFlags())
 	if err := viper.BindPFlags(rootCmd.PersistentFlags()); err != nil {
-		logger.Fatal().Err(err).Msg("failed to bind flags")
+		log.Fatal().Err(err).Msg("failed to bind flags")
 	}
 }
 
