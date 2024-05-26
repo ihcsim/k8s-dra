@@ -9,8 +9,10 @@ OPENAPI_GO_PKG := github.com/ihcsim/k8s-dra/pkg/openapi
 
 BOILERPLATE_FILE := hack/boilerplate.go.txt
 
-build: tidy lint
-	GOOS=$(GOOS) GOARCH=$(GOARCH) go build ./...
+build: controller
+
+controller: tidy lint
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build ./cmd/controller
 
 test: tidy lint
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go test ./...
