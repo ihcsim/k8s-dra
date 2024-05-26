@@ -4,8 +4,13 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
-  build:
+  prebuild:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -16,5 +21,36 @@ jobs:
       with:
         version: v1.58
     - run: make codegen-verify
+    - run: make tidy
+    - run: make lint
+    - uses: actions/upload-artifact@v4
+      with:
+        name: build
+        path: ${{ github.workspace }}
+
+  test:
+    needs: prebuild
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: build
     - run: make test
-    - run: make build
+
+  controller:
+    needs: [prebuild, test]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: build
+    - run: make controller
+
+  plugin:
+    needs: [prebuild, test]
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: build
+    - run: make plugin
