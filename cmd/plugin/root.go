@@ -7,12 +7,17 @@ import (
 	"syscall"
 
 	"github.com/ihcsim/k8s-dra/cmd/flags"
-	"github.com/ihcsim/k8s-dra/pkg/drivers/gpu"
+	draclientset "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned"
+	gpukubeletplugin "github.com/ihcsim/k8s-dra/pkg/drivers/gpu/kubelet"
+	"golang.org/x/exp/rand"
+
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	plugin "k8s.io/dynamic-resource-allocation/kubeletplugin"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/dynamic-resource-allocation/kubeletplugin"
 )
 
 const driverName = "driver.resources.ihcsim"
@@ -42,6 +47,10 @@ func init() {
 	if err := viper.BindPFlags(rootCmd.PersistentFlags()); err != nil {
 		log.Fatal().Err(err).Msg("failed to bind flags")
 	}
+
+	if err := viper.BindEnv("node-name", "NODE_NAME"); err != nil {
+		log.Fatal().Err(err).Msg("failed to bind env vars")
+	}
 }
 
 func executeContext(ctx context.Context) error {
@@ -49,22 +58,40 @@ func executeContext(ctx context.Context) error {
 }
 
 func run(ctx context.Context) error {
+	var (
+		kubeconfig       = viper.GetString("kubeconfig")
+		cdiRoot          = viper.GetString("cdi-root")
+		namespace        = viper.GetString("namespace")
+		nodeName         = viper.GetString("node-name")
+		maxAvailableGPU  = viper.GetInt("max-available-gpu")
+		randAvailableGPU = rand.Intn(maxAvailableGPU)
+	)
+
 	if err := os.MkdirAll(pluginPath, 0750); err != nil {
 		return err
 	}
 
-	cdiRoot := viper.GetString("cdi-root")
 	if err := os.MkdirAll(cdiRoot, 0750); err != nil {
 		return err
 	}
 
-	nodeServer := gpu.NewNodeServer(ctx)
-	p, err := plugin.Start(
+	draClientSets, err := draClientSets(kubeconfig)
+	if err != nil {
+		return err
+	}
+
+	log.Info().Msgf("Starting DRA node server with %d available GPUs", randAvailableGPU)
+	nodeServer, err := gpukubeletplugin.NewNodeServer(ctx, draClientSets, cdiRoot, namespace, nodeName, randAvailableGPU, log.Logger)
+	if err != nil {
+		return err
+	}
+
+	p, err := kubeletplugin.Start(
 		nodeServer,
-		plugin.DriverName(driverName),
-		plugin.RegistrarSocketPath(pluginRegistrationPath),
-		plugin.PluginSocketPath(pluginSocketPath),
-		plugin.KubeletPluginSocketPath(pluginSocketPath),
+		kubeletplugin.DriverName(driverName),
+		kubeletplugin.RegistrarSocketPath(pluginRegistrationPath),
+		kubeletplugin.PluginSocketPath(pluginSocketPath),
+		kubeletplugin.KubeletPluginSocketPath(pluginSocketPath),
 	)
 	if err != nil {
 		return err
@@ -76,4 +103,20 @@ func run(ctx context.Context) error {
 
 	p.Stop()
 	return nodeServer.Shutdown(ctx)
+}
+
+func kubeConfig(kubeconfigPath string) (*rest.Config, error) {
+	if kubeconfigPath != "" {
+		return clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+	}
+	return rest.InClusterConfig()
+}
+
+func draClientSets(kubeconfigPath string) (draclientset.Interface, error) {
+	kubecfg, err := kubeConfig(kubeconfigPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return draclientset.NewForConfig(kubecfg)
 }

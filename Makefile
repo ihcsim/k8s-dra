@@ -11,10 +11,10 @@ BOILERPLATE_FILE := hack/boilerplate.go.txt
 
 all: tidy lint test controller plugin
 
-controller:
+controller: tidy
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/controller ./cmd/controller
 
-plugin:
+plugin: tidy
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build -o bin/plugin ./cmd/plugin
 
 test:

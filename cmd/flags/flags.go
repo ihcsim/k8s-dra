@@ -26,5 +26,7 @@ func NewControllerFlags() *pflag.FlagSet {
 func NewPluginFlags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet("plugin", pflag.ExitOnError)
 	flags.String("cdi-root", "/etc/cdi", "Absolute path to the directory where CDI files will be generated")
+	flags.String("namespace", "k8s-dra", "Namespace where the kubelet plugin watches for DeviceAllocation CRDs")
+	flags.Int("max-available-gpu", 4, "Maximum number of GPUs available on the node")
 	return flags
 }
