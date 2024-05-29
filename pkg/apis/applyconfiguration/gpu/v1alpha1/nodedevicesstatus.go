@@ -27,6 +27,7 @@ import (
 type NodeDevicesStatusApplyConfiguration struct {
 	State         *v1alpha1.NodeDevicesAllocationState `json:"state,omitempty"`
 	AllocatedGPUs map[string][]*v1alpha1.GPUDevice     `json:"allocatedGpus,omitempty"`
+	PreparedGPUs  map[string][]*v1alpha1.GPUDevice     `json:"preparedGpus,omitempty"`
 }
 
 // NodeDevicesStatusApplyConfiguration constructs an declarative configuration of the NodeDevicesStatus type for use with
@@ -53,6 +54,20 @@ func (b *NodeDevicesStatusApplyConfiguration) WithAllocatedGPUs(entries map[stri
 	}
 	for k, v := range entries {
 		b.AllocatedGPUs[k] = v
+	}
+	return b
+}
+
+// WithPreparedGPUs puts the entries into the PreparedGPUs field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, the entries provided by each call will be put on the PreparedGPUs field,
+// overwriting an existing map entries in PreparedGPUs field with the same key.
+func (b *NodeDevicesStatusApplyConfiguration) WithPreparedGPUs(entries map[string][]*v1alpha1.GPUDevice) *NodeDevicesStatusApplyConfiguration {
+	if b.PreparedGPUs == nil && len(entries) > 0 {
+		b.PreparedGPUs = make(map[string][]*v1alpha1.GPUDevice, len(entries))
+	}
+	for k, v := range entries {
+		b.PreparedGPUs[k] = v
 	}
 	return b
 }

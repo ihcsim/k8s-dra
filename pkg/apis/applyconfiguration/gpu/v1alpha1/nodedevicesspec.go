@@ -25,7 +25,7 @@ import (
 // NodeDevicesSpecApplyConfiguration represents an declarative configuration of the NodeDevicesSpec type for use
 // with apply.
 type NodeDevicesSpecApplyConfiguration struct {
-	AvailableGPUs []*v1alpha1.GPUDevice `json:"availableGpus,omitempty"`
+	AllocatableGPUs []*v1alpha1.GPUDevice `json:"availableGpus,omitempty"`
 }
 
 // NodeDevicesSpecApplyConfiguration constructs an declarative configuration of the NodeDevicesSpec type for use with
@@ -34,15 +34,15 @@ func NodeDevicesSpec() *NodeDevicesSpecApplyConfiguration {
 	return &NodeDevicesSpecApplyConfiguration{}
 }
 
-// WithAvailableGPUs adds the given value to the AvailableGPUs field in the declarative configuration
+// WithAllocatableGPUs adds the given value to the AllocatableGPUs field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
-// If called multiple times, values provided by each call will be appended to the AvailableGPUs field.
-func (b *NodeDevicesSpecApplyConfiguration) WithAvailableGPUs(values ...**v1alpha1.GPUDevice) *NodeDevicesSpecApplyConfiguration {
+// If called multiple times, values provided by each call will be appended to the AllocatableGPUs field.
+func (b *NodeDevicesSpecApplyConfiguration) WithAllocatableGPUs(values ...**v1alpha1.GPUDevice) *NodeDevicesSpecApplyConfiguration {
 	for i := range values {
 		if values[i] == nil {
-			panic("nil value passed to WithAvailableGPUs")
+			panic("nil value passed to WithAllocatableGPUs")
 		}
-		b.AvailableGPUs = append(b.AvailableGPUs, *values[i])
+		b.AllocatableGPUs = append(b.AllocatableGPUs, *values[i])
 	}
 	return b
 }

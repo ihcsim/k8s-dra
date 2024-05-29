@@ -92,7 +92,7 @@ func (p *gpuPlugin) unsuitableNode(
 		gpuClaims = append(gpuClaims, claim)
 	}
 
-	availableGPUs := p.availableGPUs(nodeDevices)
+	allocatableGPUs := p.allocatableGPUs(nodeDevices)
 	allocatedGPUs := map[string][]string{}
 	for _, gpuClaim := range gpuClaims {
 		nodeClaim := nodeClaim{
@@ -116,7 +116,7 @@ func (p *gpuPlugin) unsuitableNode(
 			p.log.Info().Msgf("skipping unsupported claim parameters kind: %T", gpuClaim.ClaimParameters)
 			continue
 		}
-		for _, gpu := range availableGPUs {
+		for _, gpu := range allocatableGPUs {
 			allocatedGPUs[nodeClaim.claimUID] = append(allocatedGPUs[nodeClaim.claimUID], gpu.UUID)
 			if len(allocatedGPUs[nodeClaim.claimUID]) >= claimParams.Count {
 				break
@@ -144,9 +144,9 @@ func (p *gpuPlugin) unsuitableNode(
 	return nil
 }
 
-func (p *gpuPlugin) availableGPUs(nodeDevices *gpuv1alpha1.NodeDevices) map[string]*gpuv1alpha1.GPUDevice {
+func (p *gpuPlugin) allocatableGPUs(nodeDevices *gpuv1alpha1.NodeDevices) map[string]*gpuv1alpha1.GPUDevice {
 	available := map[string]*gpuv1alpha1.GPUDevice{}
-	for _, gpu := range nodeDevices.Spec.AvailableGPUs {
+	for _, gpu := range nodeDevices.Spec.AllocatableGPUs {
 		available[gpu.UUID] = gpu
 	}
 

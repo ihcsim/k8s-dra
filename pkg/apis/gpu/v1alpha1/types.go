@@ -19,13 +19,14 @@ type NodeDevices struct {
 
 // NodeDevicesSpec is the spec for the DeviceAllocation CRD.
 type NodeDevicesSpec struct {
-	AvailableGPUs []*GPUDevice `json:"availableGpus,omitempty"`
+	AllocatableGPUs []*GPUDevice `json:"availableGpus,omitempty"`
 }
 
 // DeviceAllocationState is the status for the DeviceAllocation CRD.
 type NodeDevicesStatus struct {
 	State         NodeDevicesAllocationState `json:"state"`
 	AllocatedGPUs map[string][]*GPUDevice    `json:"allocatedGpus,omitempty"`
+	PreparedGPUs  map[string][]*GPUDevice    `json:"preparedGpus,omitempty"`
 }
 
 type NodeDevicesAllocationState int
