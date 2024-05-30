@@ -10,6 +10,7 @@ import (
 	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
 	cdi "github.com/ihcsim/k8s-dra/pkg/drivers/gpu/kubelet/cdi"
 	zlog "github.com/rs/zerolog"
+	resourcev1alpha2 "k8s.io/api/resource/v1alpha2"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/util/retry"
@@ -199,11 +200,18 @@ func (n *NodeServer) nodeUnprepareResource(ctx context.Context, claimUID string)
 // NodeListAndWatchResources returns a stream of NodeResourcesResponse objects.
 // see https://pkg.go.dev/k8s.io/kubelet/pkg/apis/dra/v1alpha3#NodeServer
 func (n *NodeServer) NodeListAndWatchResources(req *kubeletdrav1.NodeListAndWatchResourcesRequest, s kubeletdrav1.Node_NodeListAndWatchResourcesServer) error {
-	return nil
-}
-
-func (n *NodeServer) Shutdown(ctx context.Context) error {
-	return nil
+	namedResources := &resourcev1alpha2.NamedResourcesResources{
+		Instances: []resourcev1alpha2.NamedResourcesInstance{
+			{Name: "test-named-resource-instance"},
+		},
+	}
+	resources := []*resourcev1alpha2.ResourceModel{
+		{NamedResources: namedResources},
+	}
+	res := &kubeletdrav1.NodeListAndWatchResourcesResponse{
+		Resources: resources,
+	}
+	return s.Send(res)
 }
 
 type gpu struct {

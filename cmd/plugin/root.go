@@ -102,7 +102,7 @@ func run(ctx context.Context) error {
 	<-sigChan
 
 	p.Stop()
-	return nodeServer.Shutdown(ctx)
+	return nil
 }
 
 func kubeConfig(kubeconfigPath string) (*rest.Config, error) {
