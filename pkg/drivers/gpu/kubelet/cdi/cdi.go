@@ -31,7 +31,7 @@ func DeviceQualifiedName(gpu *gpuv1alpha1.GPUDevice) string {
 	return cdiapi.QualifiedName(cdiVendor, cdiClass, gpu.UUID)
 }
 
-func CreateClaimSpecFile(claimUID string, gpus []*gpuv1alpha1.GPUDevice) error {
+func CreateCDISpec(claimUID string, gpus []*gpuv1alpha1.GPUDevice) error {
 	specName := cdiapi.GenerateTransientSpecName(cdiVendor, cdiClass, claimUID)
 	spec := &cdispec.Spec{
 		Kind:    cdiKind,
@@ -60,7 +60,7 @@ func CreateClaimSpecFile(claimUID string, gpus []*gpuv1alpha1.GPUDevice) error {
 	return registry.SpecDB().WriteSpec(spec, specName)
 }
 
-func DeleteClaimSpecFile(claimUID string) error {
+func DeleteCDISpec(claimUID string) error {
 	specName := cdiapi.GenerateTransientSpecName(cdiVendor, cdiClass, claimUID)
 	return registry.SpecDB().RemoveSpec(specName)
 }

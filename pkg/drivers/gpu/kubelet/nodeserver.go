@@ -138,7 +138,7 @@ func (n *NodeServer) nodePrepareResource(ctx context.Context, claimUID string) *
 		}
 
 		if len(preparedGPUs) > 0 {
-			if err := cdi.CreateClaimSpecFile(claimUID, preparedGPUs); err != nil {
+			if err := cdi.CreateCDISpec(claimUID, preparedGPUs); err != nil {
 				return err
 			}
 		}
@@ -179,7 +179,7 @@ func (n *NodeServer) nodeUnprepareResource(ctx context.Context, claimUID string)
 			return nil
 		}
 
-		if err := cdi.DeleteClaimSpecFile(claimUID); err != nil {
+		if err := cdi.DeleteCDISpec(claimUID); err != nil {
 			return err
 		}
 
