@@ -1,6 +1,7 @@
 package cdi
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 
@@ -63,4 +64,16 @@ func CreateCDISpec(claimUID string, gpus []*gpuv1alpha1.GPUDevice) error {
 func DeleteCDISpec(claimUID string) error {
 	specName := cdiapi.GenerateTransientSpecName(cdiVendor, cdiClass, claimUID)
 	return registry.SpecDB().RemoveSpec(specName)
+}
+
+func Specs() ([]*cdiapi.Spec, error) {
+	specs := registry.SpecDB().GetVendorSpecs(cdiVendor)
+
+	var errs error
+	for _, spec := range specs {
+		specErrs := registry.SpecDB().GetSpecErrors(spec)
+		specErrs = append(specErrs, errs)
+		errs = errors.Join(specErrs...)
+	}
+	return specs, errs
 }

@@ -5,10 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/uuid"
 	draclientset "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned"
 	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
-	cdi "github.com/ihcsim/k8s-dra/pkg/drivers/gpu/kubelet/cdi"
+	"github.com/ihcsim/k8s-dra/pkg/drivers/gpu/kubelet/cdi"
 	zlog "github.com/rs/zerolog"
 	resourcev1alpha2 "k8s.io/api/resource/v1alpha2"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
@@ -20,6 +19,11 @@ import (
 const AvailableGPUsCount = 4
 
 var _ kubeletdrav1.NodeServer = &NodeServer{}
+
+type gpuDevice struct {
+	*gpuv1alpha1.GPUDevice
+	cdiAnnotations map[string]string
+}
 
 // NodeServer provides the API implementation of the node server.
 // see https://pkg.go.dev/k8s.io/kubelet/pkg/apis/dra/v1alpha3#NodeServer
@@ -42,10 +46,14 @@ func NewNodeServer(
 	nodeName string,
 	availableGPUs int,
 	log zlog.Logger) (*NodeServer, error) {
-	gpus := discoverGPUs(availableGPUs)
+	gpus, err := discoverGPUs(availableGPUs)
+	if err != nil {
+		return nil, err
+	}
+
 	var gpuDevices []*gpuv1alpha1.GPUDevice
 	for _, gpu := range gpus {
-		gpuDevices = append(gpuDevices, gpu.device)
+		gpuDevices = append(gpuDevices, gpu.GPUDevice)
 	}
 
 	if _, err := clientSets.GpuV1alpha1().NodeDevices(namespace).Get(ctx, nodeName, metav1.GetOptions{}); err != nil && apierrs.IsNotFound(err) {
@@ -214,20 +222,23 @@ func (n *NodeServer) NodeListAndWatchResources(req *kubeletdrav1.NodeListAndWatc
 	return s.Send(res)
 }
 
-type gpu struct {
-	device *gpuv1alpha1.GPUDevice
-}
-
-func discoverGPUs(maxAvailableGPU int) []*gpu {
-	gpus := make([]*gpu, maxAvailableGPU)
-	for i := 0; i < maxAvailableGPU; i++ {
-		gpus = append(gpus, &gpu{
-			device: &gpuv1alpha1.GPUDevice{
-				UUID:        uuid.NewString(),
-				ProductName: "NVIDIA Tesla V100",
-			},
-		})
+func discoverGPUs(maxAvailableGPU int) ([]*gpuDevice, error) {
+	specs, err := cdi.Specs()
+	if err != nil {
+		return nil, err
 	}
 
-	return gpus
+	var gpuDevices []*gpuDevice
+	for _, spec := range specs {
+		for _, device := range spec.Devices {
+			gpuDevices = append(gpuDevices, &gpuDevice{
+				GPUDevice: &gpuv1alpha1.GPUDevice{
+					UUID:        device.Name,
+					ProductName: device.ContainerEdits.Env[1],
+				},
+			})
+		}
+	}
+
+	return gpuDevices, nil
 }
