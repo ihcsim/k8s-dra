@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	cdiapi "github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
 	"github.com/google/uuid"
 	draclientset "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned"
 	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
+	cdi "github.com/ihcsim/k8s-dra/pkg/drivers/gpu/kubelet/cdi"
 	zlog "github.com/rs/zerolog"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -23,7 +23,6 @@ var _ kubeletdrav1.NodeServer = &NodeServer{}
 // NodeServer provides the API implementation of the node server.
 // see https://pkg.go.dev/k8s.io/kubelet/pkg/apis/dra/v1alpha3#NodeServer
 type NodeServer struct {
-	cdi           cdiapi.Registry
 	clientSets    draclientset.Interface
 	log           zlog.Logger
 	namespace     string
@@ -66,9 +65,10 @@ func NewNodeServer(
 		}
 	}
 
+	cdi.InitRegistryOnce(cdiRoot)
+
 	logger := log.With().Str("namespace", namespace).Logger()
 	return &NodeServer{
-		cdi:           initCDIRegistry(cdiRoot),
 		clientSets:    clientSets,
 		log:           logger,
 		namespace:     namespace,
@@ -109,7 +109,7 @@ func (n *NodeServer) nodePrepareResource(ctx context.Context, claimUID string) *
 			// if the allocated GPU is already prepared, add its CDI qualified name to
 			// the response
 			if _, exists := nodeDevices.Status.PreparedGPUs[claimUID]; exists {
-				res.CDIDevices = append(res.CDIDevices, cdiQualifiedName(allocatedGPU))
+				res.CDIDevices = append(res.CDIDevices, cdi.DeviceQualifiedName(allocatedGPU))
 				continue
 			}
 
@@ -120,7 +120,7 @@ func (n *NodeServer) nodePrepareResource(ctx context.Context, claimUID string) *
 					found = true
 					nodeDevices.Status.PreparedGPUs[claimUID] = append(nodeDevices.Status.PreparedGPUs[claimUID], allocatedGPU)
 					preparedGPUs = append(preparedGPUs, allocatedGPU)
-					res.CDIDevices = append(res.CDIDevices, cdiQualifiedName(allocatedGPU))
+					res.CDIDevices = append(res.CDIDevices, cdi.DeviceQualifiedName(allocatedGPU))
 				}
 			}
 
@@ -137,7 +137,7 @@ func (n *NodeServer) nodePrepareResource(ctx context.Context, claimUID string) *
 		}
 
 		if len(preparedGPUs) > 0 {
-			if err := createClaimSpecFile(n.cdi, claimUID, preparedGPUs); err != nil {
+			if err := cdi.CreateClaimSpecFile(claimUID, preparedGPUs); err != nil {
 				return err
 			}
 		}
@@ -154,7 +154,46 @@ func (n *NodeServer) nodePrepareResource(ctx context.Context, claimUID string) *
 // NodeUnprepareResources is the opposite of NodePrepareResources.
 // see https://pkg.go.dev/k8s.io/kubelet/pkg/apis/dra/v1alpha3#NodeServer
 func (n *NodeServer) NodeUnprepareResources(ctx context.Context, req *kubeletdrav1.NodeUnprepareResourcesRequest) (*kubeletdrav1.NodeUnprepareResourcesResponse, error) {
-	return nil, nil
+	res := &kubeletdrav1.NodeUnprepareResourcesResponse{
+		Claims: map[string]*kubeletdrav1.NodeUnprepareResourceResponse{},
+	}
+
+	for _, claim := range req.Claims {
+		claimUID := claim.GetUid()
+		res.Claims[claimUID] = n.nodeUnprepareResource(ctx, claimUID)
+	}
+
+	return res, nil
+}
+
+func (n *NodeServer) nodeUnprepareResource(ctx context.Context, claimUID string) *kubeletdrav1.NodeUnprepareResourceResponse {
+	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		nodeDevices, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Get(ctx, n.nodeName, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+
+		// nothing to unprepare
+		if _, exists := nodeDevices.Status.PreparedGPUs[claimUID]; !exists {
+			return nil
+		}
+
+		if err := cdi.DeleteClaimSpecFile(claimUID); err != nil {
+			return err
+		}
+
+		delete(nodeDevices.Status.PreparedGPUs, claimUID)
+		if _, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Update(ctx, nodeDevices, metav1.UpdateOptions{}); err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return &kubeletdrav1.NodeUnprepareResourceResponse{
+			Error: err.Error(),
+		}
+	}
+
+	return &kubeletdrav1.NodeUnprepareResourceResponse{}
 }
 
 // NodeListAndWatchResources returns a stream of NodeResourcesResponse objects.

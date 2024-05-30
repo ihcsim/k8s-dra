@@ -1,7 +1,8 @@
-package kubelet
+package cdi
 
 import (
 	"fmt"
+	"sync"
 
 	cdiapi "github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
 	cdispec "github.com/container-orchestrated-devices/container-device-interface/specs-go"
@@ -13,17 +14,24 @@ const (
 	cdiClass  = "gpu"
 )
 
-var cdiKind = cdiVendor + "/" + cdiClass
+var (
+	cdiKind = cdiVendor + "/" + cdiClass
 
-func initCDIRegistry(cdiRoot string) cdiapi.Registry {
-	return cdiapi.GetRegistry(cdiapi.WithSpecDirs(cdiRoot))
+	registry cdiapi.Registry
+	once     sync.Once
+)
+
+func InitRegistryOnce(cdiRoot string) {
+	once.Do(func() {
+		registry = cdiapi.GetRegistry(cdiapi.WithSpecDirs(cdiRoot))
+	})
 }
 
-func cdiQualifiedName(gpu *gpuv1alpha1.GPUDevice) string {
+func DeviceQualifiedName(gpu *gpuv1alpha1.GPUDevice) string {
 	return cdiapi.QualifiedName(cdiVendor, cdiClass, gpu.UUID)
 }
 
-func createClaimSpecFile(r cdiapi.Registry, claimUID string, gpus []*gpuv1alpha1.GPUDevice) error {
+func CreateClaimSpecFile(claimUID string, gpus []*gpuv1alpha1.GPUDevice) error {
 	specName := cdiapi.GenerateTransientSpecName(cdiVendor, cdiClass, claimUID)
 	spec := &cdispec.Spec{
 		Kind:    cdiKind,
@@ -49,5 +57,10 @@ func createClaimSpecFile(r cdiapi.Registry, claimUID string, gpus []*gpuv1alpha1
 	}
 	spec.Version = minVersion
 
-	return r.SpecDB().WriteSpec(spec, specName)
+	return registry.SpecDB().WriteSpec(spec, specName)
+}
+
+func DeleteClaimSpecFile(claimUID string) error {
+	specName := cdiapi.GenerateTransientSpecName(cdiVendor, cdiClass, claimUID)
+	return registry.SpecDB().RemoveSpec(specName)
 }
