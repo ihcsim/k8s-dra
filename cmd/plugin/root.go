@@ -9,7 +9,6 @@ import (
 	"github.com/ihcsim/k8s-dra/cmd/flags"
 	draclientset "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned"
 	gpukubeletplugin "github.com/ihcsim/k8s-dra/pkg/drivers/gpu/kubelet"
-	"golang.org/x/exp/rand"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
@@ -59,12 +58,10 @@ func executeContext(ctx context.Context) error {
 
 func run(ctx context.Context) error {
 	var (
-		kubeconfig       = viper.GetString("kubeconfig")
-		cdiRoot          = viper.GetString("cdi-root")
-		namespace        = viper.GetString("namespace")
-		nodeName         = viper.GetString("node-name")
-		maxAvailableGPU  = viper.GetInt("max-available-gpu")
-		randAvailableGPU = rand.Intn(maxAvailableGPU)
+		kubeconfig = viper.GetString("kubeconfig")
+		cdiRoot    = viper.GetString("cdi-root")
+		namespace  = viper.GetString("namespace")
+		nodeName   = viper.GetString("node-name")
 	)
 
 	if err := os.MkdirAll(pluginPath, 0750); err != nil {
@@ -80,8 +77,8 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	log.Info().Msgf("Starting DRA node server with %d available GPUs", randAvailableGPU)
-	nodeServer, err := gpukubeletplugin.NewNodeServer(ctx, draClientSets, cdiRoot, namespace, nodeName, randAvailableGPU, log.Logger)
+	log.Info().Msgf("starting DRA node server...")
+	nodeServer, err := gpukubeletplugin.NewNodeServer(ctx, draClientSets, cdiRoot, namespace, nodeName, log.Logger)
 	if err != nil {
 		return err
 	}

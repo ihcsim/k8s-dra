@@ -22,7 +22,6 @@ import (
 )
 
 const (
-	DeviceTypeGPU          = "gpu"
 	GPUClaimParametersKind = "GPUClaimParameters"
 	Version                = "v1alpha1"
 )

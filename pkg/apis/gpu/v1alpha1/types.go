@@ -32,8 +32,8 @@ type NodeDevicesStatus struct {
 type NodeDevicesAllocationState int
 
 const (
-	Ready NodeDevicesAllocationState = iota
-	NotReady
+	NodeDevicesAllocationStateReady NodeDevicesAllocationState = iota
+	NodeDevicesAllocationStateNotReady
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -50,6 +50,7 @@ type NodeDevicesList struct {
 type GPUDevice struct {
 	UUID        string `json:"uuid"`
 	ProductName string `json:"productName"`
+	Vendor      string `json:"vendor"`
 }
 
 // +genclient
@@ -72,8 +73,8 @@ type GPUClassParametersSpec struct {
 
 // DeviceSelector allows one to match on a specific type of Device as part of the class.
 type DeviceSelector struct {
-	Type string `json:"type"`
-	Name string `json:"name"`
+	Name   string `json:"name"`
+	Vendor string `json:"vendor"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

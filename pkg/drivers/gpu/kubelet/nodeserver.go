@@ -20,19 +20,13 @@ const AvailableGPUsCount = 4
 
 var _ kubeletdrav1.NodeServer = &NodeServer{}
 
-type gpuDevice struct {
-	*gpuv1alpha1.GPUDevice
-	cdiAnnotations map[string]string
-}
-
 // NodeServer provides the API implementation of the node server.
 // see https://pkg.go.dev/k8s.io/kubelet/pkg/apis/dra/v1alpha3#NodeServer
 type NodeServer struct {
-	clientSets    draclientset.Interface
-	log           zlog.Logger
-	namespace     string
-	nodeName      string
-	availableGPUs int
+	clientSets draclientset.Interface
+	log        zlog.Logger
+	namespace  string
+	nodeName   string
 }
 
 // NewNodeServer returns a new instance of the NodeServer. It also initializes
@@ -44,16 +38,20 @@ func NewNodeServer(
 	cdiRoot string,
 	namespace string,
 	nodeName string,
-	availableGPUs int,
 	log zlog.Logger) (*NodeServer, error) {
-	gpus, err := discoverGPUs(availableGPUs)
+	cdi.InitRegistryOnce(cdiRoot)
+	gpus, err := cdi.DiscoverFromSpecs()
 	if err != nil {
 		return nil, err
 	}
 
 	var gpuDevices []*gpuv1alpha1.GPUDevice
 	for _, gpu := range gpus {
-		gpuDevices = append(gpuDevices, gpu.GPUDevice)
+		gpuDevices = append(gpuDevices, &gpuv1alpha1.GPUDevice{
+			UUID:        gpu.UUID,
+			ProductName: gpu.ProductName,
+			Vendor:      gpu.VendorName,
+		})
 	}
 
 	if _, err := clientSets.GpuV1alpha1().NodeDevices(namespace).Get(ctx, nodeName, metav1.GetOptions{}); err != nil && apierrs.IsNotFound(err) {
@@ -66,7 +64,7 @@ func NewNodeServer(
 				AllocatableGPUs: gpuDevices,
 			},
 			Status: gpuv1alpha1.NodeDevicesStatus{
-				State: gpuv1alpha1.Ready,
+				State: gpuv1alpha1.NodeDevicesAllocationStateReady,
 			},
 		}
 		if _, err := clientSets.GpuV1alpha1().NodeDevices(namespace).Create(ctx, nodeDevices, metav1.CreateOptions{}); err != nil {
@@ -74,15 +72,12 @@ func NewNodeServer(
 		}
 	}
 
-	cdi.InitRegistryOnce(cdiRoot)
-
 	logger := log.With().Str("namespace", namespace).Logger()
 	return &NodeServer{
-		clientSets:    clientSets,
-		log:           logger,
-		namespace:     namespace,
-		nodeName:      nodeName,
-		availableGPUs: availableGPUs,
+		clientSets: clientSets,
+		log:        logger,
+		namespace:  namespace,
+		nodeName:   nodeName,
 	}, nil
 }
 
@@ -220,25 +215,4 @@ func (n *NodeServer) NodeListAndWatchResources(req *kubeletdrav1.NodeListAndWatc
 		Resources: resources,
 	}
 	return s.Send(res)
-}
-
-func discoverGPUs(maxAvailableGPU int) ([]*gpuDevice, error) {
-	specs, err := cdi.Specs()
-	if err != nil {
-		return nil, err
-	}
-
-	var gpuDevices []*gpuDevice
-	for _, spec := range specs {
-		for _, device := range spec.Devices {
-			gpuDevices = append(gpuDevices, &gpuDevice{
-				GPUDevice: &gpuv1alpha1.GPUDevice{
-					UUID:        device.Name,
-					ProductName: device.ContainerEdits.Env[1],
-				},
-			})
-		}
-	}
-
-	return gpuDevices, nil
 }

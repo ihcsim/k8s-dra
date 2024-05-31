@@ -22,10 +22,37 @@ var (
 	once     sync.Once
 )
 
+// GPUDevice is used to encapsulate the CDI information of a GPU device.
+type GPUDevice struct {
+	UUID        string
+	ProductName string
+	VendorName  string
+}
+
 func InitRegistryOnce(cdiRoot string) {
 	once.Do(func() {
 		registry = cdiapi.GetRegistry(cdiapi.WithSpecDirs(cdiRoot))
 	})
+}
+
+func DiscoverFromSpecs() ([]*GPUDevice, error) {
+	specs, err := Specs()
+	if err != nil {
+		return nil, err
+	}
+
+	var gpuDevices []*GPUDevice
+	for _, spec := range specs {
+		for _, device := range spec.Devices {
+			gpuDevices = append(gpuDevices, &GPUDevice{
+				UUID:        device.Name,
+				ProductName: device.ContainerEdits.Env[1],
+				VendorName:  device.ContainerEdits.Env[2],
+			})
+		}
+	}
+
+	return gpuDevices, nil
 }
 
 func DeviceQualifiedName(gpu *gpuv1alpha1.GPUDevice) string {
