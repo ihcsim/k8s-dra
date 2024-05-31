@@ -23,6 +23,7 @@ package v1alpha1
 type GPUDeviceApplyConfiguration struct {
 	UUID        *string `json:"uuid,omitempty"`
 	ProductName *string `json:"productName,omitempty"`
+	Vendor      *string `json:"vendor,omitempty"`
 }
 
 // GPUDeviceApplyConfiguration constructs an declarative configuration of the GPUDevice type for use with
@@ -44,5 +45,13 @@ func (b *GPUDeviceApplyConfiguration) WithUUID(value string) *GPUDeviceApplyConf
 // If called multiple times, the ProductName field is set to the value of the last call.
 func (b *GPUDeviceApplyConfiguration) WithProductName(value string) *GPUDeviceApplyConfiguration {
 	b.ProductName = &value
+	return b
+}
+
+// WithVendor sets the Vendor field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Vendor field is set to the value of the last call.
+func (b *GPUDeviceApplyConfiguration) WithVendor(value string) *GPUDeviceApplyConfiguration {
+	b.Vendor = &value
 	return b
 }

@@ -21,8 +21,8 @@ package v1alpha1
 // DeviceSelectorApplyConfiguration represents an declarative configuration of the DeviceSelector type for use
 // with apply.
 type DeviceSelectorApplyConfiguration struct {
-	Type *string `json:"type,omitempty"`
-	Name *string `json:"name,omitempty"`
+	Name   *string `json:"name,omitempty"`
+	Vendor *string `json:"vendor,omitempty"`
 }
 
 // DeviceSelectorApplyConfiguration constructs an declarative configuration of the DeviceSelector type for use with
@@ -31,18 +31,18 @@ func DeviceSelector() *DeviceSelectorApplyConfiguration {
 	return &DeviceSelectorApplyConfiguration{}
 }
 
-// WithType sets the Type field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Type field is set to the value of the last call.
-func (b *DeviceSelectorApplyConfiguration) WithType(value string) *DeviceSelectorApplyConfiguration {
-	b.Type = &value
-	return b
-}
-
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
 func (b *DeviceSelectorApplyConfiguration) WithName(value string) *DeviceSelectorApplyConfiguration {
 	b.Name = &value
+	return b
+}
+
+// WithVendor sets the Vendor field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the Vendor field is set to the value of the last call.
+func (b *DeviceSelectorApplyConfiguration) WithVendor(value string) *DeviceSelectorApplyConfiguration {
+	b.Vendor = &value
 	return b
 }
