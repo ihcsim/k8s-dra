@@ -122,6 +122,7 @@ func (d *driver) GetClaimParameters(
 // allocated.
 // see https://pkg.go.dev/k8s.io/dynamic-resource-allocation/controller#Driver
 func (d *driver) Allocate(ctx context.Context, claimAllocations []*dractrl.ClaimAllocation, selectedNode string) {
+	d.log.Debug().Msg("attempting to allocate GPUs...")
 	for _, ca := range claimAllocations {
 		if selectedNode == "" {
 			ca.Error = fmt.Errorf("immediate allocation is not supported.")
@@ -184,6 +185,11 @@ func (d *driver) allocate(
 // Deallocate gets called when a ResourceClaim is ready to be freed.
 // see https://pkg.go.dev/k8s.io/dynamic-resource-allocation/controller#Driver
 func (d *driver) Deallocate(ctx context.Context, claim *resourcev1alpha2.ResourceClaim) error {
+	d.log.Debug().Msg("attempting to deallocate GPUs...")
+	if !claim.Status.DeallocationRequested {
+		return fmt.Errorf("unexpected deallocation request")
+	}
+
 	selectedNode := getSelectedNode(claim)
 	if selectedNode == "" {
 		d.log.Info().Msg("no selected node found, skipping deallocation")
@@ -241,6 +247,7 @@ func getSelectedNode(claim *resourcev1alpha2.ResourceClaim) string {
 // UnsuitableNodes checks all pending claims with delayed allocation for a pod.
 // see https://pkg.go.dev/k8s.io/dynamic-resource-allocation/controller#Driver
 func (d *driver) UnsuitableNodes(ctx context.Context, pod *corev1.Pod, claims []*dractrl.ClaimAllocation, potentialNodes []string) error {
+	d.log.Debug().Msg("attempting to determine unsuitable nodes for GPU allocation...")
 	var errs error
 	for _, potentialNode := range potentialNodes {
 		getOpts := metav1.GetOptions{}
