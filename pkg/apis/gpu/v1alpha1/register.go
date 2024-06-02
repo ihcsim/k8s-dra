@@ -47,6 +47,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&GPUClassParametersList{},
 		&GPUClaimParameters{},
 		&GPUClaimParametersList{},
+		&NodeDevices{},
+		&NodeDevicesList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil

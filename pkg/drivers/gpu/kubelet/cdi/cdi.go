@@ -7,7 +7,6 @@ import (
 
 	cdiapi "github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
 	cdispec "github.com/container-orchestrated-devices/container-device-interface/specs-go"
-	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
 )
 
 const (
@@ -55,11 +54,11 @@ func DiscoverFromSpecs() ([]*GPUDevice, error) {
 	return gpuDevices, nil
 }
 
-func DeviceQualifiedName(gpu *gpuv1alpha1.GPUDevice) string {
+func DeviceQualifiedName(gpu *GPUDevice) string {
 	return cdiapi.QualifiedName(cdiVendor, cdiClass, gpu.UUID)
 }
 
-func CreateCDISpec(claimUID string, gpus []*gpuv1alpha1.GPUDevice) error {
+func CreateCDISpec(claimUID string, gpus []*GPUDevice) error {
 	specName := cdiapi.GenerateTransientSpecName(cdiVendor, cdiClass, claimUID)
 	spec := &cdispec.Spec{
 		Kind:    cdiKind,
@@ -71,8 +70,9 @@ func CreateCDISpec(claimUID string, gpus []*gpuv1alpha1.GPUDevice) error {
 			Name: gpu.UUID,
 			ContainerEdits: cdispec.ContainerEdits{
 				Env: []string{
-					fmt.Sprintf("GPU_DEVICE_UUID=%s", gpu.UUID),
-					fmt.Sprintf("GPU_DEVICE_PRODUCT_NAME=%s", gpu.ProductName),
+					fmt.Sprintf("DEVICE_UUID=%s", gpu.UUID),
+					fmt.Sprintf("DEVICE_PRODUCT_NAME=%s", gpu.ProductName),
+					fmt.Sprintf("DEVICE_VENDOR_NAME=%s", gpu.VendorName),
 				},
 			},
 		}

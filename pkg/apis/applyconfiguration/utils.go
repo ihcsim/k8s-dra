@@ -29,6 +29,8 @@ import (
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
 	// Group=gpu, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithKind("DeviceAllocation"):
+		return &gpuv1alpha1.DeviceAllocationApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("DeviceSelector"):
 		return &gpuv1alpha1.DeviceSelectorApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("GPUClaimParameters"):
@@ -43,10 +45,6 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &gpuv1alpha1.GPUDeviceApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("NodeDevices"):
 		return &gpuv1alpha1.NodeDevicesApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("NodeDevicesSpec"):
-		return &gpuv1alpha1.NodeDevicesSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("NodeDevicesStatus"):
-		return &gpuv1alpha1.NodeDevicesStatusApplyConfiguration{}
 
 	}
 	return nil

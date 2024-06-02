@@ -19,6 +19,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	v1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -29,8 +30,9 @@ import (
 type NodeDevicesApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *NodeDevicesSpecApplyConfiguration   `json:"spec,omitempty"`
-	Status                           *NodeDevicesStatusApplyConfiguration `json:"status,omitempty"`
+	AllocatableGPUs                  []*v1alpha1.GPUDevice                   `json:"allocatedGPUs,omitempty"`
+	Allocations                      map[string][]*v1alpha1.DeviceAllocation `json:"allocations,omitempty"`
+	NodeSuitability                  map[string]v1alpha1.NodeSuitability     `json:"nodeSuitability,omitempty"`
 }
 
 // NodeDevices constructs an declarative configuration of the NodeDevices type for use with
@@ -202,18 +204,43 @@ func (b *NodeDevicesApplyConfiguration) ensureObjectMetaApplyConfigurationExists
 	}
 }
 
-// WithSpec sets the Spec field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Spec field is set to the value of the last call.
-func (b *NodeDevicesApplyConfiguration) WithSpec(value *NodeDevicesSpecApplyConfiguration) *NodeDevicesApplyConfiguration {
-	b.Spec = value
+// WithAllocatableGPUs adds the given value to the AllocatableGPUs field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, values provided by each call will be appended to the AllocatableGPUs field.
+func (b *NodeDevicesApplyConfiguration) WithAllocatableGPUs(values ...**v1alpha1.GPUDevice) *NodeDevicesApplyConfiguration {
+	for i := range values {
+		if values[i] == nil {
+			panic("nil value passed to WithAllocatableGPUs")
+		}
+		b.AllocatableGPUs = append(b.AllocatableGPUs, *values[i])
+	}
 	return b
 }
 
-// WithStatus sets the Status field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Status field is set to the value of the last call.
-func (b *NodeDevicesApplyConfiguration) WithStatus(value *NodeDevicesStatusApplyConfiguration) *NodeDevicesApplyConfiguration {
-	b.Status = value
+// WithAllocations puts the entries into the Allocations field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, the entries provided by each call will be put on the Allocations field,
+// overwriting an existing map entries in Allocations field with the same key.
+func (b *NodeDevicesApplyConfiguration) WithAllocations(entries map[string][]*v1alpha1.DeviceAllocation) *NodeDevicesApplyConfiguration {
+	if b.Allocations == nil && len(entries) > 0 {
+		b.Allocations = make(map[string][]*v1alpha1.DeviceAllocation, len(entries))
+	}
+	for k, v := range entries {
+		b.Allocations[k] = v
+	}
+	return b
+}
+
+// WithNodeSuitability puts the entries into the NodeSuitability field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, the entries provided by each call will be put on the NodeSuitability field,
+// overwriting an existing map entries in NodeSuitability field with the same key.
+func (b *NodeDevicesApplyConfiguration) WithNodeSuitability(entries map[string]v1alpha1.NodeSuitability) *NodeDevicesApplyConfiguration {
+	if b.NodeSuitability == nil && len(entries) > 0 {
+		b.NodeSuitability = make(map[string]v1alpha1.NodeSuitability, len(entries))
+	}
+	for k, v := range entries {
+		b.NodeSuitability[k] = v
+	}
 	return b
 }

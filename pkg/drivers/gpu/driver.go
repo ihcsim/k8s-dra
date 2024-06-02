@@ -13,6 +13,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	resourcev1alpha2 "k8s.io/api/resource/v1alpha2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 	dractrl "k8s.io/dynamic-resource-allocation/controller"
 )
 
@@ -157,24 +158,30 @@ func (d *driver) allocate(
 		return err
 	}
 
-	if nodeDevices.Status.AllocatedGPUs == nil {
-		nodeDevices.Status.AllocatedGPUs = map[string][]*gpuv1alpha1.GPUDevice{}
-	}
-
-	if _, exists := nodeDevices.Status.AllocatedGPUs[claimUID]; exists {
-		log.Info().Msg("on-going allocation already exists, let it finish")
-		return nil
-	}
-
 	log.Info().Msg("allocating GPUs...")
-	allocatableGPUs, err := d.allocatableGPUs(nodeDevices, claimAllocation, selectedNode)
+	allocatableGPUs, err := d.findAllocatableGPUs(nodeDevices, claimAllocation, selectedNode)
 	if err != nil {
 		return err
 	}
-	nodeDevices.Status.AllocatedGPUs[claimUID] = allocatableGPUs
 
-	updateOpts := metav1.UpdateOptions{}
-	if _, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Update(ctx, nodeDevices, updateOpts); err != nil {
+	for _, allocatable := range allocatableGPUs {
+		apiGroup := apis.GroupName
+		newDeviceAllocation := &gpuv1alpha1.DeviceAllocation{
+			Claim: corev1.TypedLocalObjectReference{
+				APIGroup: &apiGroup,
+				Kind:     gpuv1alpha1.GPUClaimParametersKind,
+				Name:     claimUID,
+			},
+			Device: allocatable,
+			State:  gpuv1alpha1.DeviceAllocationStateAllocated,
+		}
+		nodeDevices.Allocations[claimUID] = append(nodeDevices.Allocations[claimUID], newDeviceAllocation)
+	}
+
+	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		_, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Update(ctx, nodeDevices, metav1.UpdateOptions{})
+		return err
+	}); err != nil {
 		return err
 	}
 
@@ -204,27 +211,23 @@ func (d *driver) Deallocate(ctx context.Context, claim *resourcev1alpha2.Resourc
 				Logger()
 	)
 
-	getOpts := metav1.GetOptions{}
-	nodeDevices, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Get(ctx, selectedNode, getOpts)
+	nodeDevices, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Get(ctx, selectedNode, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	if nodeDevices.Status.AllocatedGPUs == nil {
+	if _, exists := nodeDevices.Allocations[claimUID]; !exists {
 		log.Info().Msg("no GPUs allocated, skipping deallocation")
 		return nil
 	}
 
-	if _, exists := nodeDevices.Status.AllocatedGPUs[claimUID]; !exists {
-		log.Info().Msg("no allocated claims found, skipping deallocation")
-		return nil
-	}
-
 	log.Info().Msg("deallocating claimed GPUs...")
-	delete(nodeDevices.Status.AllocatedGPUs, claimUID)
+	delete(nodeDevices.Allocations, claimUID)
 
-	updateOpts := metav1.UpdateOptions{}
-	if _, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Update(ctx, nodeDevices, updateOpts); err != nil {
+	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		_, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Update(ctx, nodeDevices, metav1.UpdateOptions{})
+		return err
+	}); err != nil {
 		return err
 	}
 
@@ -247,11 +250,10 @@ func getSelectedNode(claim *resourcev1alpha2.ResourceClaim) string {
 // UnsuitableNodes checks all pending claims with delayed allocation for a pod.
 // see https://pkg.go.dev/k8s.io/dynamic-resource-allocation/controller#Driver
 func (d *driver) UnsuitableNodes(ctx context.Context, pod *corev1.Pod, claims []*dractrl.ClaimAllocation, potentialNodes []string) error {
-	d.log.Debug().Msg("attempting to determine unsuitable nodes for GPU allocation...")
+	d.log.Debug().Msg("assessing potential node's suitability...")
 	var errs error
 	for _, potentialNode := range potentialNodes {
-		getOpts := metav1.GetOptions{}
-		nodeDevices, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Get(ctx, potentialNode, getOpts)
+		nodeDevices, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Get(ctx, potentialNode, metav1.GetOptions{})
 		if err != nil {
 			for _, claim := range claims {
 				claim.UnsuitableNodes = append(claim.UnsuitableNodes, potentialNode)
@@ -259,19 +261,18 @@ func (d *driver) UnsuitableNodes(ctx context.Context, pod *corev1.Pod, claims []
 			return nil
 		}
 
-		if nodeDevices.Status.State != gpuv1alpha1.NodeDevicesAllocationStateReady {
-			for _, claim := range claims {
-				claim.UnsuitableNodes = append(claim.UnsuitableNodes, potentialNode)
-			}
-			return nil
-		}
-
-		if nodeDevices.Status.AllocatedGPUs == nil {
-			nodeDevices.Status.AllocatedGPUs = map[string][]*gpuv1alpha1.GPUDevice{}
-		}
-
-		if err := d.unsuitableNode(nodeDevices, pod, claims, potentialNode); err != nil {
+		nodeDevicesUpdated, err := d.unsuitableNode(nodeDevices, pod, claims, potentialNode)
+		if err != nil {
 			errs = errors.Join(errs, err)
+			continue
+		}
+
+		if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+			_, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Update(ctx, nodeDevicesUpdated, metav1.UpdateOptions{})
+			return err
+		}); err != nil {
+			errs = errors.Join(errs, err)
+			continue
 		}
 	}
 
@@ -308,7 +309,7 @@ func buildAllocationResult(selectedNode string, shareable bool) *resourcev1alpha
 	}
 }
 
-func (d *driver) allocatableGPUs(
+func (d *driver) findAllocatableGPUs(
 	nodeDevices *gpuv1alpha1.NodeDevices,
 	claimAllocation *dractrl.ClaimAllocation,
 	selectedNode string) ([]*gpuv1alpha1.GPUDevice, error) {
@@ -329,11 +330,15 @@ func (d *driver) allocatableGPUs(
 
 	allocatableGPUs := []*gpuv1alpha1.GPUDevice{}
 	for _, availableGPU := range availableGPUs {
-		for _, selector := range classParams.DeviceSelector {
-			if selector.Name == availableGPU.ProductName && selector.Vendor == availableGPU.Vendor {
-				allocatableGPUs = append(allocatableGPUs, availableGPU)
+		if len(classParams.DeviceSelector) > 0 {
+			for _, selector := range classParams.DeviceSelector {
+				if selector.Name == availableGPU.ProductName && selector.Vendor == availableGPU.Vendor {
+					allocatableGPUs = append(allocatableGPUs, availableGPU)
+				}
 			}
+			continue
 		}
+		allocatableGPUs = append(allocatableGPUs, availableGPU)
 	}
 
 	return allocatableGPUs, nil
@@ -343,7 +348,8 @@ func (d *driver) unsuitableNode(
 	nodeDevices *gpuv1alpha1.NodeDevices,
 	pod *corev1.Pod,
 	claims []*dractrl.ClaimAllocation,
-	potentialNode string) error {
+	potentialNode string) (*gpuv1alpha1.NodeDevices, error) {
+	nodeDeviceClone := nodeDevices.DeepCopy()
 	for _, claim := range claims {
 		claimParams, ok := claim.ClaimParameters.(*gpuv1alpha1.GPUClaimParametersSpec)
 		if !ok {
@@ -358,16 +364,25 @@ func (d *driver) unsuitableNode(
 		if claimParams.Count != allocatedCount {
 			d.log.Info().Msgf("insufficient GPUs on node %s for claim %s, marking node as unsuitable", potentialNode, claimUID)
 			claim.UnsuitableNodes = append(claim.UnsuitableNodes, potentialNode)
+			nodeDeviceClone.NodeSuitability[claimUID] = gpuv1alpha1.NodeSuitabilityUnsuitable
+			continue
 		}
+		nodeDeviceClone.NodeSuitability[claimUID] = gpuv1alpha1.NodeSuitabilitySuitable
 	}
 
-	return nil
+	return nodeDeviceClone, nil
 }
 
 func (d *driver) allocatedCount(nodeDevices *gpuv1alpha1.NodeDevices, claimUID string) int {
-	// if existing allocated GPUs are founf for this claim, return the count
-	if gpus, exists := nodeDevices.Status.AllocatedGPUs[claimUID]; exists {
-		return len(gpus)
+	// if existing allocated GPUs are found for this claim, return the count
+	if allocations, exists := nodeDevices.Allocations[claimUID]; exists {
+		allocatedCount := 0
+		for _, allocation := range allocations {
+			if allocation.State == gpuv1alpha1.DeviceAllocationStateAllocated {
+				allocatedCount++
+			}
+		}
+		return allocatedCount
 	}
 
 	return len(d.availableGPUs(nodeDevices))
@@ -376,15 +391,19 @@ func (d *driver) allocatedCount(nodeDevices *gpuv1alpha1.NodeDevices, claimUID s
 func (d *driver) availableGPUs(
 	nodeDevices *gpuv1alpha1.NodeDevices) map[string]*gpuv1alpha1.GPUDevice {
 	available := map[string]*gpuv1alpha1.GPUDevice{}
-	for _, gpu := range nodeDevices.Spec.AllocatableGPUs {
+	for _, gpu := range nodeDevices.AllocatableGPUs {
+		d.log.Info().Msgf("found allocatable GPU %s", gpu.UUID)
 		available[gpu.UUID] = gpu
 	}
 
 	// find the GPUs that are already allocated, regardless of their claims
 	// and remove them from the available list
-	for _, gpus := range nodeDevices.Status.AllocatedGPUs {
-		for _, gpu := range gpus {
-			delete(available, gpu.UUID)
+	for _, allocations := range nodeDevices.Allocations {
+		for _, allocation := range allocations {
+			if allocation.State == gpuv1alpha1.DeviceAllocationStateAllocated {
+				d.log.Info().Msgf("remove allocated GPU %s from available list", allocation.Device.UUID)
+				delete(available, allocation.Device.UUID)
+			}
 		}
 	}
 

@@ -43,7 +43,6 @@ type NodeDevicesGetter interface {
 type NodeDevicesInterface interface {
 	Create(ctx context.Context, nodeDevices *v1alpha1.NodeDevices, opts v1.CreateOptions) (*v1alpha1.NodeDevices, error)
 	Update(ctx context.Context, nodeDevices *v1alpha1.NodeDevices, opts v1.UpdateOptions) (*v1alpha1.NodeDevices, error)
-	UpdateStatus(ctx context.Context, nodeDevices *v1alpha1.NodeDevices, opts v1.UpdateOptions) (*v1alpha1.NodeDevices, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
 	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.NodeDevices, error)
@@ -51,7 +50,6 @@ type NodeDevicesInterface interface {
 	Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
 	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1alpha1.NodeDevices, err error)
 	Apply(ctx context.Context, nodeDevices *gpuv1alpha1.NodeDevicesApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.NodeDevices, err error)
-	ApplyStatus(ctx context.Context, nodeDevices *gpuv1alpha1.NodeDevicesApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.NodeDevices, err error)
 	NodeDevicesExpansion
 }
 
@@ -141,22 +139,6 @@ func (c *nodeDevices) Update(ctx context.Context, nodeDevices *v1alpha1.NodeDevi
 	return
 }
 
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *nodeDevices) UpdateStatus(ctx context.Context, nodeDevices *v1alpha1.NodeDevices, opts v1.UpdateOptions) (result *v1alpha1.NodeDevices, err error) {
-	result = &v1alpha1.NodeDevices{}
-	err = c.client.Put().
-		Namespace(c.ns).
-		Resource("nodedevices").
-		Name(nodeDevices.Name).
-		SubResource("status").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Body(nodeDevices).
-		Do(ctx).
-		Into(result)
-	return
-}
-
 // Delete takes name of the nodeDevices and deletes it. Returns an error if one occurs.
 func (c *nodeDevices) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	return c.client.Delete().
@@ -218,36 +200,6 @@ func (c *nodeDevices) Apply(ctx context.Context, nodeDevices *gpuv1alpha1.NodeDe
 		Namespace(c.ns).
 		Resource("nodedevices").
 		Name(*name).
-		VersionedParams(&patchOpts, scheme.ParameterCodec).
-		Body(data).
-		Do(ctx).
-		Into(result)
-	return
-}
-
-// ApplyStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-func (c *nodeDevices) ApplyStatus(ctx context.Context, nodeDevices *gpuv1alpha1.NodeDevicesApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.NodeDevices, err error) {
-	if nodeDevices == nil {
-		return nil, fmt.Errorf("nodeDevices provided to Apply must not be nil")
-	}
-	patchOpts := opts.ToPatchOptions()
-	data, err := json.Marshal(nodeDevices)
-	if err != nil {
-		return nil, err
-	}
-
-	name := nodeDevices.Name
-	if name == nil {
-		return nil, fmt.Errorf("nodeDevices.Name must be provided to Apply")
-	}
-
-	result = &v1alpha1.NodeDevices{}
-	err = c.client.Patch(types.ApplyPatchType).
-		Namespace(c.ns).
-		Resource("nodedevices").
-		Name(*name).
-		SubResource("status").
 		VersionedParams(&patchOpts, scheme.ParameterCodec).
 		Body(data).
 		Do(ctx).

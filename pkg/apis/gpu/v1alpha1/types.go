@@ -1,39 +1,62 @@
 package v1alpha1
 
-import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+import (
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
 // +kubebuilder:resource:scope=Namespaced
 
-// NodeDevices holds the availability and allocation states of GPUs
-// on a node. The name of the object is the name of the node.
+// NodeDevices holds the spec of GPU devices on a node, and the devices'
+// allocation state. A GPU device can be in one of three states: allocatable,
+// allocated, or prepared.
+// The name of the object is the name of the node.
 type NodeDevices struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   NodeDevicesSpec   `json:"spec,omitempty"`
-	Status NodeDevicesStatus `json:"status,omitempty"`
+	AllocatableGPUs []*GPUDevice                   `json:"allocatedGPUs,omitempty"`
+	Allocations     map[string][]*DeviceAllocation `json:"allocations,omitempty"`
+	NodeSuitability map[string]NodeSuitability     `json:"nodeSuitability,omitempty"`
 }
 
-// NodeDevicesSpec is the spec for the DeviceAllocation CRD.
-type NodeDevicesSpec struct {
-	AllocatableGPUs []*GPUDevice `json:"availableGpus,omitempty"`
+// DeviceAllocation represents the allocation state of a GPU device.
+type DeviceAllocation struct {
+	Claim  corev1.TypedLocalObjectReference `json:"claim"`
+	Device *GPUDevice                       `json:"devices"`
+	State  DeviceAllocationState            `json:"state"`
 }
 
-// DeviceAllocationState is the status for the DeviceAllocation CRD.
-type NodeDevicesStatus struct {
-	State         NodeDevicesAllocationState `json:"state"`
-	AllocatedGPUs map[string][]*GPUDevice    `json:"allocatedGpus,omitempty"`
-	PreparedGPUs  map[string][]*GPUDevice    `json:"preparedGpus,omitempty"`
-}
-
-type NodeDevicesAllocationState int
+// DeviceAllocationState represents the state of a GPU device. A GPU device can
+// be in one of three states: allocatable, allocated, or prepared.
+type DeviceAllocationState string
 
 const (
-	NodeDevicesAllocationStateReady NodeDevicesAllocationState = iota
-	NodeDevicesAllocationStateNotReady
+	// the kubelet plugin determines the allocatable devices on a node
+	DeviceAllocationStateAllocatable = "allocatable"
+
+	// the device driver places a temporary hold on a device if the host node
+	// is deemed suitable for satisfying a pod's resource claim
+	DeviceAllocationStateHold = "hold"
+
+	// the device driver allocates a device to a pod based on the pod's resource
+	// claim request
+	DeviceAllocationStateAllocated = "allocated"
+
+	// the kubelet plugin prepares an allocated device for use by a pod
+	DeviceAllocationStatePrepared = "prepared"
+)
+
+// NodeSuitability describes the suitability of a node for running GPU workloads.
+type NodeSuitability string
+
+const (
+	NodeSuitabilitySuitable   = "suitable"
+	NodeSuitabilityUnsuitable = "unsuitable"
+	NodeSuitabilityUnknown    = "unknown"
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

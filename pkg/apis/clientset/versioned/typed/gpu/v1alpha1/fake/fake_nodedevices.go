@@ -104,18 +104,6 @@ func (c *FakeNodeDevices) Update(ctx context.Context, nodeDevices *v1alpha1.Node
 	return obj.(*v1alpha1.NodeDevices), err
 }
 
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakeNodeDevices) UpdateStatus(ctx context.Context, nodeDevices *v1alpha1.NodeDevices, opts v1.UpdateOptions) (*v1alpha1.NodeDevices, error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(nodedevicesResource, "status", c.ns, nodeDevices), &v1alpha1.NodeDevices{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.NodeDevices), err
-}
-
 // Delete takes name of the nodeDevices and deletes it. Returns an error if one occurs.
 func (c *FakeNodeDevices) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
 	_, err := c.Fake.
@@ -158,29 +146,6 @@ func (c *FakeNodeDevices) Apply(ctx context.Context, nodeDevices *gpuv1alpha1.No
 	}
 	obj, err := c.Fake.
 		Invokes(testing.NewPatchSubresourceAction(nodedevicesResource, c.ns, *name, types.ApplyPatchType, data), &v1alpha1.NodeDevices{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.NodeDevices), err
-}
-
-// ApplyStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating ApplyStatus().
-func (c *FakeNodeDevices) ApplyStatus(ctx context.Context, nodeDevices *gpuv1alpha1.NodeDevicesApplyConfiguration, opts v1.ApplyOptions) (result *v1alpha1.NodeDevices, err error) {
-	if nodeDevices == nil {
-		return nil, fmt.Errorf("nodeDevices provided to Apply must not be nil")
-	}
-	data, err := json.Marshal(nodeDevices)
-	if err != nil {
-		return nil, err
-	}
-	name := nodeDevices.Name
-	if name == nil {
-		return nil, fmt.Errorf("nodeDevices.Name must be provided to Apply")
-	}
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(nodedevicesResource, c.ns, *name, types.ApplyPatchType, data, "status"), &v1alpha1.NodeDevices{})
 
 	if obj == nil {
 		return nil, err

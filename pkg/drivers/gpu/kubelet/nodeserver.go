@@ -2,8 +2,6 @@ package kubelet
 
 import (
 	"context"
-	"errors"
-	"fmt"
 
 	draclientset "github.com/ihcsim/k8s-dra/pkg/apis/clientset/versioned"
 	gpuv1alpha1 "github.com/ihcsim/k8s-dra/pkg/apis/gpu/v1alpha1"
@@ -39,19 +37,22 @@ func NewNodeServer(
 	namespace string,
 	nodeName string,
 	log zlog.Logger) (*NodeServer, error) {
+	logger := log.With().Str("namespace", namespace).Logger()
+	logger.Info().Msg("initializing CDI registry and discovering CDI devices...")
 	cdi.InitRegistryOnce(cdiRoot)
 	gpus, err := cdi.DiscoverFromSpecs()
 	if err != nil {
 		return nil, err
 	}
+	logger.Info().Msgf("discovered %d CDI devices", len(gpus))
 
-	var gpuDevices []*gpuv1alpha1.GPUDevice
-	for _, gpu := range gpus {
-		gpuDevices = append(gpuDevices, &gpuv1alpha1.GPUDevice{
+	gpuDevices := make([]*gpuv1alpha1.GPUDevice, len(gpus))
+	for i, gpu := range gpus {
+		gpuDevices[i] = &gpuv1alpha1.GPUDevice{
 			UUID:        gpu.UUID,
 			ProductName: gpu.ProductName,
 			Vendor:      gpu.VendorName,
-		})
+		}
 	}
 
 	if _, err := clientSets.GpuV1alpha1().NodeDevices(namespace).Get(ctx, nodeName, metav1.GetOptions{}); err != nil && apierrs.IsNotFound(err) {
@@ -60,19 +61,16 @@ func NewNodeServer(
 				Name:      nodeName,
 				Namespace: namespace,
 			},
-			Spec: gpuv1alpha1.NodeDevicesSpec{
-				AllocatableGPUs: gpuDevices,
-			},
-			Status: gpuv1alpha1.NodeDevicesStatus{
-				State: gpuv1alpha1.NodeDevicesAllocationStateReady,
-			},
+			AllocatableGPUs: gpuDevices,
+			Allocations:     map[string][]*gpuv1alpha1.DeviceAllocation{},
+			NodeSuitability: map[string]gpuv1alpha1.NodeSuitability{},
 		}
+		logger.Info().Msgf("creating new NodeDevices %s...", nodeName)
 		if _, err := clientSets.GpuV1alpha1().NodeDevices(namespace).Create(ctx, nodeDevices, metav1.CreateOptions{}); err != nil {
 			return nil, err
 		}
 	}
 
-	logger := log.With().Str("namespace", namespace).Logger()
 	return &NodeServer{
 		clientSets: clientSets,
 		log:        logger,
@@ -84,72 +82,84 @@ func NewNodeServer(
 // NodePrepareResources prepares several ResourceClaims for use on the node.
 // see https://pkg.go.dev/k8s.io/kubelet/pkg/apis/dra/v1alpha3#NodeServer
 func (n *NodeServer) NodePrepareResources(ctx context.Context, req *kubeletdrav1.NodePrepareResourcesRequest) (*kubeletdrav1.NodePrepareResourcesResponse, error) {
+	n.log.Info().Msg("preparing resources...")
 	res := &kubeletdrav1.NodePrepareResourcesResponse{
 		Claims: map[string]*kubeletdrav1.NodePrepareResourceResponse{},
 	}
 
+	nodeDevices, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Get(ctx, n.nodeName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
 	for _, claim := range req.Claims {
 		claimUID := claim.GetUid()
-		res.Claims[claimUID] = n.nodePrepareResource(ctx, claimUID)
+		res.Claims[claimUID] = n.nodePrepareResource(ctx, nodeDevices, claimUID)
 	}
 
 	return res, nil
 }
 
-func (n *NodeServer) nodePrepareResource(ctx context.Context, claimUID string) *kubeletdrav1.NodePrepareResourceResponse {
+func (n *NodeServer) nodePrepareResource(ctx context.Context, nodeDevices *gpuv1alpha1.NodeDevices, claimUID string) *kubeletdrav1.NodePrepareResourceResponse {
 	var (
-		preparedGPUs = []*gpuv1alpha1.GPUDevice{}
-		res          = &kubeletdrav1.NodePrepareResourceResponse{}
+		cdiDevices = []*cdi.GPUDevice{}
+		res        = &kubeletdrav1.NodePrepareResourceResponse{}
+		log        = n.log.With().Str("claim", claimUID).Logger()
 	)
 
-	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		nodeDevices, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Get(ctx, n.nodeName, metav1.GetOptions{})
-		if err != nil {
-			return err
+	claimAllocations, exists := nodeDevices.Allocations[claimUID]
+	if !exists {
+		log.Info().Msg("no device allocation found")
+		return &kubeletdrav1.NodePrepareResourceResponse{}
+	}
+
+	for i, claimAllocation := range claimAllocations {
+		if claimAllocation.State != gpuv1alpha1.DeviceAllocationStateAllocated && claimAllocation.State != gpuv1alpha1.DeviceAllocationStatePrepared {
+			log.Info().Msg("device allocation is not in either allocated or protected state")
+			return &kubeletdrav1.NodePrepareResourceResponse{}
 		}
 
-		var errs error
-		for _, allocatedGPU := range nodeDevices.Status.AllocatedGPUs[claimUID] {
-			// if the allocated GPU is already prepared, add its CDI qualified name to
-			// the response
-			if _, exists := nodeDevices.Status.PreparedGPUs[claimUID]; exists {
-				res.CDIDevices = append(res.CDIDevices, cdi.DeviceQualifiedName(allocatedGPU))
-				continue
+		var (
+			device    = claimAllocation.Device
+			cdiDevice = &cdi.GPUDevice{
+				UUID:        device.UUID,
+				ProductName: device.ProductName,
+				VendorName:  device.Vendor,
 			}
+			qualifiedName = cdi.DeviceQualifiedName(cdiDevice)
+		)
 
-			// otherwise, if the allocated GPU is still allocatable, mark it as prepared
-			var found bool
-			for _, allocatableGPU := range nodeDevices.Spec.AllocatableGPUs {
-				if allocatedGPU.UUID == allocatableGPU.UUID {
-					found = true
-					nodeDevices.Status.PreparedGPUs[claimUID] = append(nodeDevices.Status.PreparedGPUs[claimUID], allocatedGPU)
-					preparedGPUs = append(preparedGPUs, allocatedGPU)
-					res.CDIDevices = append(res.CDIDevices, cdi.DeviceQualifiedName(allocatedGPU))
-				}
-			}
+		log.Info().
+			Str("deviceUUID", device.UUID).
+			Str("deviceProductName", device.ProductName).
+			Str("deviceVendor", device.Vendor).
+			Str("deviceState", string(claimAllocation.State)).
+			Str("qualifiedName", qualifiedName).
+			Msg("preparing CDI device...")
+		res.CDIDevices = append(res.CDIDevices, qualifiedName)
+		cdiDevices = append(cdiDevices, cdiDevice)
 
-			if !found {
-				errs = errors.Join(errs, fmt.Errorf("allocated GPU %s is no longer allocatable", allocatedGPU.UUID))
-			}
-		}
-		if errs != nil {
-			return errs
-		}
+		if claimAllocation.State == gpuv1alpha1.DeviceAllocationStateAllocated {
+			claimAllocationClone := claimAllocation.DeepCopy()
+			claimAllocationClone.State = gpuv1alpha1.DeviceAllocationStatePrepared
 
-		if _, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Update(ctx, nodeDevices, metav1.UpdateOptions{}); err != nil {
-			return err
-		}
+			nodeDevicesClone := nodeDevices.DeepCopy()
+			nodeDevicesClone.Allocations[claimUID][i] = claimAllocationClone
 
-		if len(preparedGPUs) > 0 {
-			if err := cdi.CreateCDISpec(claimUID, preparedGPUs); err != nil {
+			if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+				_, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Update(ctx, nodeDevicesClone, metav1.UpdateOptions{})
 				return err
+			}); err != nil {
+				res.Error = err.Error()
+				return res
 			}
 		}
+	}
 
-		return nil
-	}); err != nil {
-		res.Error = err.Error()
-		return res
+	if len(cdiDevices) > 0 {
+		if err := cdi.CreateCDISpec(claimUID, cdiDevices); err != nil {
+			res.Error = err.Error()
+		}
 	}
 
 	return res
@@ -158,6 +168,7 @@ func (n *NodeServer) nodePrepareResource(ctx context.Context, claimUID string) *
 // NodeUnprepareResources is the opposite of NodePrepareResources.
 // see https://pkg.go.dev/k8s.io/kubelet/pkg/apis/dra/v1alpha3#NodeServer
 func (n *NodeServer) NodeUnprepareResources(ctx context.Context, req *kubeletdrav1.NodeUnprepareResourcesRequest) (*kubeletdrav1.NodeUnprepareResourcesResponse, error) {
+	n.log.Info().Msg("unpreparing resources...")
 	res := &kubeletdrav1.NodeUnprepareResourcesResponse{
 		Claims: map[string]*kubeletdrav1.NodeUnprepareResourceResponse{},
 	}
@@ -171,26 +182,29 @@ func (n *NodeServer) NodeUnprepareResources(ctx context.Context, req *kubeletdra
 }
 
 func (n *NodeServer) nodeUnprepareResource(ctx context.Context, claimUID string) *kubeletdrav1.NodeUnprepareResourceResponse {
+	nodeDevices, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Get(ctx, n.nodeName, metav1.GetOptions{})
+	if err != nil {
+		return &kubeletdrav1.NodeUnprepareResourceResponse{
+			Error: err.Error(),
+		}
+	}
+
+	if _, exists := nodeDevices.Allocations[claimUID]; !exists {
+		n.log.Info().Msg("no device allocation found, skipping resource unpreparation...")
+		return &kubeletdrav1.NodeUnprepareResourceResponse{}
+	}
+
+	n.log.Info().Str("claimUID", claimUID).Msg("unpreparing claim allocations...")
+	delete(nodeDevices.Allocations, claimUID)
+	if err := cdi.DeleteCDISpec(claimUID); err != nil {
+		return &kubeletdrav1.NodeUnprepareResourceResponse{
+			Error: err.Error(),
+		}
+	}
+
 	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		nodeDevices, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Get(ctx, n.nodeName, metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
-
-		// nothing to unprepare
-		if _, exists := nodeDevices.Status.PreparedGPUs[claimUID]; !exists {
-			return nil
-		}
-
-		if err := cdi.DeleteCDISpec(claimUID); err != nil {
-			return err
-		}
-
-		delete(nodeDevices.Status.PreparedGPUs, claimUID)
-		if _, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Update(ctx, nodeDevices, metav1.UpdateOptions{}); err != nil {
-			return err
-		}
-		return nil
+		_, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Update(ctx, nodeDevices, metav1.UpdateOptions{})
+		return err
 	}); err != nil {
 		return &kubeletdrav1.NodeUnprepareResourceResponse{
 			Error: err.Error(),
