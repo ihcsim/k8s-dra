@@ -2,8 +2,8 @@
 ![slsa3](https://github.com/ihcsim/k8s-dra/actions/workflows/slsa3.yaml/badge.svg)
 
 # k8s-dra
-A sample project to demonstrate K8s dynamic resource allocation derived from
-https://github.com/kubernetes-sigs/dra-example-driver.
+A sample project to demonstrate delay allocation of K8s dynamic resources. It is
+derived from https://github.com/kubernetes-sigs/dra-example-driver.
 
 ## Development
 

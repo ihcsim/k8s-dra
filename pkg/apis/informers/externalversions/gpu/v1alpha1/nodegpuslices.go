@@ -32,59 +32,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// GPUClaimParametersInformer provides access to a shared informer and lister for
-// GPUClaimParameters.
-type GPUClaimParametersInformer interface {
+// NodeGPUSlicesInformer provides access to a shared informer and lister for
+// NodeGPUSlices.
+type NodeGPUSlicesInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.GPUClaimParametersLister
+	Lister() v1alpha1.NodeGPUSlicesLister
 }
 
-type gPUClaimParametersInformer struct {
+type nodeGPUSlicesInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewGPUClaimParametersInformer constructs a new informer for GPUClaimParameters type.
+// NewNodeGPUSlicesInformer constructs a new informer for NodeGPUSlices type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewGPUClaimParametersInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredGPUClaimParametersInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewNodeGPUSlicesInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredNodeGPUSlicesInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredGPUClaimParametersInformer constructs a new informer for GPUClaimParameters type.
+// NewFilteredNodeGPUSlicesInformer constructs a new informer for NodeGPUSlices type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredGPUClaimParametersInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredNodeGPUSlicesInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.GpuV1alpha1().GPUClaimParameters(namespace).List(context.TODO(), options)
+				return client.GpuV1alpha1().NodeGPUSlices(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.GpuV1alpha1().GPUClaimParameters(namespace).Watch(context.TODO(), options)
+				return client.GpuV1alpha1().NodeGPUSlices(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&gpuv1alpha1.GPUClaimParameters{},
+		&gpuv1alpha1.NodeGPUSlices{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *gPUClaimParametersInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredGPUClaimParametersInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *nodeGPUSlicesInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredNodeGPUSlicesInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *gPUClaimParametersInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&gpuv1alpha1.GPUClaimParameters{}, f.defaultInformer)
+func (f *nodeGPUSlicesInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&gpuv1alpha1.NodeGPUSlices{}, f.defaultInformer)
 }
 
-func (f *gPUClaimParametersInformer) Lister() v1alpha1.GPUClaimParametersLister {
-	return v1alpha1.NewGPUClaimParametersLister(f.Informer().GetIndexer())
+func (f *nodeGPUSlicesInformer) Lister() v1alpha1.NodeGPUSlicesLister {
+	return v1alpha1.NewNodeGPUSlicesLister(f.Informer().GetIndexer())
 }

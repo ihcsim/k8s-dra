@@ -41,7 +41,7 @@ codegen:
 		--output-pkg $(API_GO_PKG) \
 		--with-applyconfig \
 		--with-watch \
-		--plural-exceptions "GPUClassParameters:GPUClassParameters,GPUClaimParameters:GPUClaimParameters,NodeDevices:NodeDevices" \
+		--plural-exceptions "GPUClassParameters:GPUClassParameters,GPURequirements:GPURequirements,NodeGPUSlices:NodeGPUSlices" \
 		$(API_ROOT_DIR)
 
 codegen-verify:

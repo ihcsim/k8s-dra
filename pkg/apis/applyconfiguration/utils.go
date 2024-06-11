@@ -33,18 +33,18 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &gpuv1alpha1.DeviceAllocationApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("DeviceSelector"):
 		return &gpuv1alpha1.DeviceSelectorApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("GPUClaimParameters"):
-		return &gpuv1alpha1.GPUClaimParametersApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("GPUClaimParametersSpec"):
-		return &gpuv1alpha1.GPUClaimParametersSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("GPUClassParameters"):
 		return &gpuv1alpha1.GPUClassParametersApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("GPUClassParametersSpec"):
 		return &gpuv1alpha1.GPUClassParametersSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("GPUDevice"):
 		return &gpuv1alpha1.GPUDeviceApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("NodeDevices"):
-		return &gpuv1alpha1.NodeDevicesApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("GPURequirements"):
+		return &gpuv1alpha1.GPURequirementsApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("GPURequirementsSpec"):
+		return &gpuv1alpha1.GPURequirementsSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("NodeGPUSlices"):
+		return &gpuv1alpha1.NodeGPUSlicesApplyConfiguration{}
 
 	}
 	return nil

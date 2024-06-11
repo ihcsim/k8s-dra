@@ -24,12 +24,12 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
-	// GPUClaimParameters returns a GPUClaimParametersInformer.
-	GPUClaimParameters() GPUClaimParametersInformer
 	// GPUClassParameters returns a GPUClassParametersInformer.
 	GPUClassParameters() GPUClassParametersInformer
-	// NodeDevices returns a NodeDevicesInformer.
-	NodeDevices() NodeDevicesInformer
+	// GPURequirements returns a GPURequirementsInformer.
+	GPURequirements() GPURequirementsInformer
+	// NodeGPUSlices returns a NodeGPUSlicesInformer.
+	NodeGPUSlices() NodeGPUSlicesInformer
 }
 
 type version struct {
@@ -43,17 +43,17 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
 }
 
-// GPUClaimParameters returns a GPUClaimParametersInformer.
-func (v *version) GPUClaimParameters() GPUClaimParametersInformer {
-	return &gPUClaimParametersInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
-}
-
 // GPUClassParameters returns a GPUClassParametersInformer.
 func (v *version) GPUClassParameters() GPUClassParametersInformer {
 	return &gPUClassParametersInformer{factory: v.factory, tweakListOptions: v.tweakListOptions}
 }
 
-// NodeDevices returns a NodeDevicesInformer.
-func (v *version) NodeDevices() NodeDevicesInformer {
-	return &nodeDevicesInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+// GPURequirements returns a GPURequirementsInformer.
+func (v *version) GPURequirements() GPURequirementsInformer {
+	return &gPURequirementsInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// NodeGPUSlices returns a NodeGPUSlicesInformer.
+func (v *version) NodeGPUSlices() NodeGPUSlicesInformer {
+	return &nodeGPUSlicesInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }

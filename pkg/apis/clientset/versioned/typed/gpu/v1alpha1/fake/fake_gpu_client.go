@@ -28,16 +28,16 @@ type FakeGpuV1alpha1 struct {
 	*testing.Fake
 }
 
-func (c *FakeGpuV1alpha1) GPUClaimParameters(namespace string) v1alpha1.GPUClaimParametersInterface {
-	return &FakeGPUClaimParameters{c, namespace}
-}
-
 func (c *FakeGpuV1alpha1) GPUClassParameters() v1alpha1.GPUClassParametersInterface {
 	return &FakeGPUClassParameters{c}
 }
 
-func (c *FakeGpuV1alpha1) NodeDevices(namespace string) v1alpha1.NodeDevicesInterface {
-	return &FakeNodeDevices{c, namespace}
+func (c *FakeGpuV1alpha1) GPURequirements(namespace string) v1alpha1.GPURequirementsInterface {
+	return &FakeGPURequirements{c, namespace}
+}
+
+func (c *FakeGpuV1alpha1) NodeGPUSlices(namespace string) v1alpha1.NodeGPUSlicesInterface {
+	return &FakeNodeGPUSlices{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate

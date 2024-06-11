@@ -89,7 +89,7 @@ func (d *driver) GetClaimParameters(
 	classParameters interface{}) (interface{}, error) {
 	if claim.Spec.ParametersRef == nil {
 		d.log.Info().Msg("no claim parameters found, so using default values")
-		return gpuv1alpha1.GPUClaimParametersSpec{
+		return gpuv1alpha1.GPURequirementsSpec{
 			Count: 1,
 		}, nil
 	}
@@ -102,17 +102,17 @@ func (d *driver) GetClaimParameters(
 		return nil, fmt.Errorf("incorrect API group: %s (vs. %s)", claim.Spec.ParametersRef.APIGroup, apiGroup)
 	}
 
-	if !strings.EqualFold(claim.Spec.ParametersRef.Kind, gpuv1alpha1.GPUClaimParametersKind) {
+	if !strings.EqualFold(claim.Spec.ParametersRef.Kind, gpuv1alpha1.GPURequirementsKind) {
 		return nil, fmt.Errorf("unsupported resource claim kind: %v", claim.Spec.ParametersRef.Kind)
 	}
 
-	claimParams, err := d.clientsets.GpuV1alpha1().GPUClaimParameters(claim.Namespace).Get(ctx, claim.Spec.ParametersRef.Name, metav1.GetOptions{})
+	claimParams, err := d.clientsets.GpuV1alpha1().GPURequirements(claim.Namespace).Get(ctx, claim.Spec.ParametersRef.Name, metav1.GetOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("error getting GPUClaimParameters called '%v' in namespace '%v': %v", claim.Spec.ParametersRef.Name, claim.Namespace, err)
+		return nil, fmt.Errorf("error getting GPURequirements called '%v' in namespace '%v': %v", claim.Spec.ParametersRef.Name, claim.Namespace, err)
 	}
 
 	if err := d.validateClaimParameters(&claimParams.Spec); err != nil {
-		return nil, fmt.Errorf("error validating GPUClaimParameters called '%v' in namespace '%v': %w", claim.Spec.ParametersRef.Name, claim.Namespace, err)
+		return nil, fmt.Errorf("error validating GPURequirements called '%v' in namespace '%v': %w", claim.Spec.ParametersRef.Name, claim.Namespace, err)
 	}
 
 	d.log.Info().Msgf("successfully retrieved claim parameters: %s", claimParams.GetName())
@@ -153,7 +153,7 @@ func (d *driver) allocate(
 	)
 
 	getOpts := metav1.GetOptions{}
-	nodeDevices, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Get(ctx, selectedNode, getOpts)
+	nodeDevices, err := d.clientsets.GpuV1alpha1().NodeGPUSlices(d.namespace).Get(ctx, selectedNode, getOpts)
 	if err != nil {
 		return err
 	}
@@ -169,7 +169,7 @@ func (d *driver) allocate(
 		newDeviceAllocation := &gpuv1alpha1.DeviceAllocation{
 			Claim: corev1.TypedLocalObjectReference{
 				APIGroup: &apiGroup,
-				Kind:     gpuv1alpha1.GPUClaimParametersKind,
+				Kind:     gpuv1alpha1.GPURequirementsKind,
 				Name:     claimUID,
 			},
 			Device: allocatable,
@@ -179,7 +179,7 @@ func (d *driver) allocate(
 	}
 
 	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		_, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Update(ctx, nodeDevices, metav1.UpdateOptions{})
+		_, err := d.clientsets.GpuV1alpha1().NodeGPUSlices(d.namespace).Update(ctx, nodeDevices, metav1.UpdateOptions{})
 		return err
 	}); err != nil {
 		return err
@@ -211,7 +211,7 @@ func (d *driver) Deallocate(ctx context.Context, claim *resourcev1alpha2.Resourc
 				Logger()
 	)
 
-	nodeDevices, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Get(ctx, selectedNode, metav1.GetOptions{})
+	nodeDevices, err := d.clientsets.GpuV1alpha1().NodeGPUSlices(d.namespace).Get(ctx, selectedNode, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -225,7 +225,7 @@ func (d *driver) Deallocate(ctx context.Context, claim *resourcev1alpha2.Resourc
 	delete(nodeDevices.Allocations, claimUID)
 
 	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		_, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Update(ctx, nodeDevices, metav1.UpdateOptions{})
+		_, err := d.clientsets.GpuV1alpha1().NodeGPUSlices(d.namespace).Update(ctx, nodeDevices, metav1.UpdateOptions{})
 		return err
 	}); err != nil {
 		return err
@@ -253,7 +253,7 @@ func (d *driver) UnsuitableNodes(ctx context.Context, pod *corev1.Pod, claims []
 	d.log.Debug().Msg("assessing potential node's suitability...")
 	var errs error
 	for _, potentialNode := range potentialNodes {
-		nodeDevices, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Get(ctx, potentialNode, metav1.GetOptions{})
+		nodeDevices, err := d.clientsets.GpuV1alpha1().NodeGPUSlices(d.namespace).Get(ctx, potentialNode, metav1.GetOptions{})
 		if err != nil {
 			for _, claim := range claims {
 				claim.UnsuitableNodes = append(claim.UnsuitableNodes, potentialNode)
@@ -268,7 +268,7 @@ func (d *driver) UnsuitableNodes(ctx context.Context, pod *corev1.Pod, claims []
 		}
 
 		if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-			_, err := d.clientsets.GpuV1alpha1().NodeDevices(d.namespace).Update(ctx, nodeDevicesUpdated, metav1.UpdateOptions{})
+			_, err := d.clientsets.GpuV1alpha1().NodeGPUSlices(d.namespace).Update(ctx, nodeDevicesUpdated, metav1.UpdateOptions{})
 			return err
 		}); err != nil {
 			errs = errors.Join(errs, err)
@@ -280,7 +280,7 @@ func (d *driver) UnsuitableNodes(ctx context.Context, pod *corev1.Pod, claims []
 	return errs
 }
 
-func (d *driver) validateClaimParameters(claimParams *gpuv1alpha1.GPUClaimParametersSpec) error {
+func (d *driver) validateClaimParameters(claimParams *gpuv1alpha1.GPURequirementsSpec) error {
 	if claimParams.Count < 1 {
 		return fmt.Errorf("invalid number of GPUs requested: %v", claimParams.Count)
 	}
@@ -310,10 +310,10 @@ func buildAllocationResult(selectedNode string, shareable bool) *resourcev1alpha
 }
 
 func (d *driver) findAllocatableGPUs(
-	nodeDevices *gpuv1alpha1.NodeDevices,
+	nodeDevices *gpuv1alpha1.NodeGPUSlices,
 	claimAllocation *dractrl.ClaimAllocation,
 	selectedNode string) ([]*gpuv1alpha1.GPUDevice, error) {
-	claimParams, ok := claimAllocation.ClaimParameters.(*gpuv1alpha1.GPUClaimParametersSpec)
+	claimParams, ok := claimAllocation.ClaimParameters.(*gpuv1alpha1.GPURequirementsSpec)
 	if !ok {
 		return nil, fmt.Errorf("unsupported claim parameters kind: %T", claimAllocation.ClaimParameters)
 	}
@@ -345,13 +345,13 @@ func (d *driver) findAllocatableGPUs(
 }
 
 func (d *driver) unsuitableNode(
-	nodeDevices *gpuv1alpha1.NodeDevices,
+	nodeDevices *gpuv1alpha1.NodeGPUSlices,
 	pod *corev1.Pod,
 	claims []*dractrl.ClaimAllocation,
-	potentialNode string) (*gpuv1alpha1.NodeDevices, error) {
+	potentialNode string) (*gpuv1alpha1.NodeGPUSlices, error) {
 	nodeDeviceClone := nodeDevices.DeepCopy()
 	for _, claim := range claims {
-		claimParams, ok := claim.ClaimParameters.(*gpuv1alpha1.GPUClaimParametersSpec)
+		claimParams, ok := claim.ClaimParameters.(*gpuv1alpha1.GPURequirementsSpec)
 		if !ok {
 			d.log.Info().Msgf("skipping unsupported claim parameters kind: %T", claim.ClaimParameters)
 			continue
@@ -373,7 +373,7 @@ func (d *driver) unsuitableNode(
 	return nodeDeviceClone, nil
 }
 
-func (d *driver) allocatedCount(nodeDevices *gpuv1alpha1.NodeDevices, claimUID string) int {
+func (d *driver) allocatedCount(nodeDevices *gpuv1alpha1.NodeGPUSlices, claimUID string) int {
 	// if existing allocated GPUs are found for this claim, return the count
 	if allocations, exists := nodeDevices.Allocations[claimUID]; exists {
 		allocatedCount := 0
@@ -389,7 +389,7 @@ func (d *driver) allocatedCount(nodeDevices *gpuv1alpha1.NodeDevices, claimUID s
 }
 
 func (d *driver) availableGPUs(
-	nodeDevices *gpuv1alpha1.NodeDevices) map[string]*gpuv1alpha1.GPUDevice {
+	nodeDevices *gpuv1alpha1.NodeGPUSlices) map[string]*gpuv1alpha1.GPUDevice {
 	available := map[string]*gpuv1alpha1.GPUDevice{}
 	for _, gpu := range nodeDevices.AllocatableGPUs {
 		d.log.Info().Msgf("found allocatable GPU %s", gpu.UUID)

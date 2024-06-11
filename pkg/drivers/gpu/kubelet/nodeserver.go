@@ -28,7 +28,7 @@ type NodeServer struct {
 }
 
 // NewNodeServer returns a new instance of the NodeServer. It also initializes
-// the associated	NodeDevices object, which defines the device specs of the
+// the associated	NodeGPUSlices object, which defines the device specs of the
 // corresponding node.
 func NewNodeServer(
 	ctx context.Context,
@@ -55,8 +55,8 @@ func NewNodeServer(
 		}
 	}
 
-	if _, err := clientSets.GpuV1alpha1().NodeDevices(namespace).Get(ctx, nodeName, metav1.GetOptions{}); err != nil && apierrs.IsNotFound(err) {
-		nodeDevices := &gpuv1alpha1.NodeDevices{
+	if _, err := clientSets.GpuV1alpha1().NodeGPUSlices(namespace).Get(ctx, nodeName, metav1.GetOptions{}); err != nil && apierrs.IsNotFound(err) {
+		nodeDevices := &gpuv1alpha1.NodeGPUSlices{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      nodeName,
 				Namespace: namespace,
@@ -65,8 +65,8 @@ func NewNodeServer(
 			Allocations:     map[string][]*gpuv1alpha1.DeviceAllocation{},
 			NodeSuitability: map[string]gpuv1alpha1.NodeSuitability{},
 		}
-		logger.Info().Msgf("creating new NodeDevices %s...", nodeName)
-		if _, err := clientSets.GpuV1alpha1().NodeDevices(namespace).Create(ctx, nodeDevices, metav1.CreateOptions{}); err != nil {
+		logger.Info().Msgf("creating new NodeGPUSlices %s...", nodeName)
+		if _, err := clientSets.GpuV1alpha1().NodeGPUSlices(namespace).Create(ctx, nodeDevices, metav1.CreateOptions{}); err != nil {
 			return nil, err
 		}
 	}
@@ -87,7 +87,7 @@ func (n *NodeServer) NodePrepareResources(ctx context.Context, req *kubeletdrav1
 		Claims: map[string]*kubeletdrav1.NodePrepareResourceResponse{},
 	}
 
-	nodeDevices, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Get(ctx, n.nodeName, metav1.GetOptions{})
+	nodeDevices, err := n.clientSets.GpuV1alpha1().NodeGPUSlices(n.namespace).Get(ctx, n.nodeName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (n *NodeServer) NodePrepareResources(ctx context.Context, req *kubeletdrav1
 	return res, nil
 }
 
-func (n *NodeServer) nodePrepareResource(ctx context.Context, nodeDevices *gpuv1alpha1.NodeDevices, claimUID string) *kubeletdrav1.NodePrepareResourceResponse {
+func (n *NodeServer) nodePrepareResource(ctx context.Context, nodeDevices *gpuv1alpha1.NodeGPUSlices, claimUID string) *kubeletdrav1.NodePrepareResourceResponse {
 	var (
 		cdiDevices = []*cdi.GPUDevice{}
 		res        = &kubeletdrav1.NodePrepareResourceResponse{}
@@ -147,7 +147,7 @@ func (n *NodeServer) nodePrepareResource(ctx context.Context, nodeDevices *gpuv1
 			nodeDevicesClone.Allocations[claimUID][i] = claimAllocationClone
 
 			if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-				_, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Update(ctx, nodeDevicesClone, metav1.UpdateOptions{})
+				_, err := n.clientSets.GpuV1alpha1().NodeGPUSlices(n.namespace).Update(ctx, nodeDevicesClone, metav1.UpdateOptions{})
 				return err
 			}); err != nil {
 				res.Error = err.Error()
@@ -182,7 +182,7 @@ func (n *NodeServer) NodeUnprepareResources(ctx context.Context, req *kubeletdra
 }
 
 func (n *NodeServer) nodeUnprepareResource(ctx context.Context, claimUID string) *kubeletdrav1.NodeUnprepareResourceResponse {
-	nodeDevices, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Get(ctx, n.nodeName, metav1.GetOptions{})
+	nodeDevices, err := n.clientSets.GpuV1alpha1().NodeGPUSlices(n.namespace).Get(ctx, n.nodeName, metav1.GetOptions{})
 	if err != nil {
 		return &kubeletdrav1.NodeUnprepareResourceResponse{
 			Error: err.Error(),
@@ -203,7 +203,7 @@ func (n *NodeServer) nodeUnprepareResource(ctx context.Context, claimUID string)
 	}
 
 	if err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
-		_, err := n.clientSets.GpuV1alpha1().NodeDevices(n.namespace).Update(ctx, nodeDevices, metav1.UpdateOptions{})
+		_, err := n.clientSets.GpuV1alpha1().NodeGPUSlices(n.namespace).Update(ctx, nodeDevices, metav1.UpdateOptions{})
 		return err
 	}); err != nil {
 		return &kubeletdrav1.NodeUnprepareResourceResponse{

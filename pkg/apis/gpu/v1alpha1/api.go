@@ -22,8 +22,8 @@ import (
 )
 
 const (
-	GPUClaimParametersKind = "GPUClaimParameters"
-	Version                = "v1alpha1"
+	GPURequirementsKind = "GPURequirements"
+	Version             = "v1alpha1"
 )
 
 var SchemeGroupVersion = schema.GroupVersion{

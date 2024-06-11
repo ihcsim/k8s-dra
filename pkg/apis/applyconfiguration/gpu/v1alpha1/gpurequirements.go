@@ -24,21 +24,21 @@ import (
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// GPUClaimParametersApplyConfiguration represents an declarative configuration of the GPUClaimParameters type for use
+// GPURequirementsApplyConfiguration represents an declarative configuration of the GPURequirements type for use
 // with apply.
-type GPUClaimParametersApplyConfiguration struct {
+type GPURequirementsApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *GPUClaimParametersSpecApplyConfiguration `json:"spec,omitempty"`
+	Spec                             *GPURequirementsSpecApplyConfiguration `json:"spec,omitempty"`
 }
 
-// GPUClaimParameters constructs an declarative configuration of the GPUClaimParameters type for use with
+// GPURequirements constructs an declarative configuration of the GPURequirements type for use with
 // apply.
-func GPUClaimParameters(name, namespace string) *GPUClaimParametersApplyConfiguration {
-	b := &GPUClaimParametersApplyConfiguration{}
+func GPURequirements(name, namespace string) *GPURequirementsApplyConfiguration {
+	b := &GPURequirementsApplyConfiguration{}
 	b.WithName(name)
 	b.WithNamespace(namespace)
-	b.WithKind("GPUClaimParameters")
+	b.WithKind("GPURequirements")
 	b.WithAPIVersion("gpu/v1alpha1")
 	return b
 }
@@ -46,7 +46,7 @@ func GPUClaimParameters(name, namespace string) *GPUClaimParametersApplyConfigur
 // WithKind sets the Kind field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Kind field is set to the value of the last call.
-func (b *GPUClaimParametersApplyConfiguration) WithKind(value string) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithKind(value string) *GPURequirementsApplyConfiguration {
 	b.Kind = &value
 	return b
 }
@@ -54,7 +54,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithKind(value string) *GPUClaimP
 // WithAPIVersion sets the APIVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the APIVersion field is set to the value of the last call.
-func (b *GPUClaimParametersApplyConfiguration) WithAPIVersion(value string) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithAPIVersion(value string) *GPURequirementsApplyConfiguration {
 	b.APIVersion = &value
 	return b
 }
@@ -62,7 +62,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithAPIVersion(value string) *GPU
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *GPUClaimParametersApplyConfiguration) WithName(value string) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithName(value string) *GPURequirementsApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Name = &value
 	return b
@@ -71,7 +71,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithName(value string) *GPUClaimP
 // WithGenerateName sets the GenerateName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the GenerateName field is set to the value of the last call.
-func (b *GPUClaimParametersApplyConfiguration) WithGenerateName(value string) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithGenerateName(value string) *GPURequirementsApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.GenerateName = &value
 	return b
@@ -80,7 +80,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithGenerateName(value string) *G
 // WithNamespace sets the Namespace field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Namespace field is set to the value of the last call.
-func (b *GPUClaimParametersApplyConfiguration) WithNamespace(value string) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithNamespace(value string) *GPURequirementsApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Namespace = &value
 	return b
@@ -89,7 +89,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithNamespace(value string) *GPUC
 // WithUID sets the UID field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the UID field is set to the value of the last call.
-func (b *GPUClaimParametersApplyConfiguration) WithUID(value types.UID) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithUID(value types.UID) *GPURequirementsApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.UID = &value
 	return b
@@ -98,7 +98,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithUID(value types.UID) *GPUClai
 // WithResourceVersion sets the ResourceVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ResourceVersion field is set to the value of the last call.
-func (b *GPUClaimParametersApplyConfiguration) WithResourceVersion(value string) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithResourceVersion(value string) *GPURequirementsApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ResourceVersion = &value
 	return b
@@ -107,7 +107,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithResourceVersion(value string)
 // WithGeneration sets the Generation field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Generation field is set to the value of the last call.
-func (b *GPUClaimParametersApplyConfiguration) WithGeneration(value int64) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithGeneration(value int64) *GPURequirementsApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Generation = &value
 	return b
@@ -116,7 +116,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithGeneration(value int64) *GPUC
 // WithCreationTimestamp sets the CreationTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CreationTimestamp field is set to the value of the last call.
-func (b *GPUClaimParametersApplyConfiguration) WithCreationTimestamp(value metav1.Time) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithCreationTimestamp(value metav1.Time) *GPURequirementsApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.CreationTimestamp = &value
 	return b
@@ -125,7 +125,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithCreationTimestamp(value metav
 // WithDeletionTimestamp sets the DeletionTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionTimestamp field is set to the value of the last call.
-func (b *GPUClaimParametersApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *GPURequirementsApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.DeletionTimestamp = &value
 	return b
@@ -134,7 +134,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithDeletionTimestamp(value metav
 // WithDeletionGracePeriodSeconds sets the DeletionGracePeriodSeconds field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionGracePeriodSeconds field is set to the value of the last call.
-func (b *GPUClaimParametersApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *GPURequirementsApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.DeletionGracePeriodSeconds = &value
 	return b
@@ -144,7 +144,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithDeletionGracePeriodSeconds(va
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Labels field,
 // overwriting an existing map entries in Labels field with the same key.
-func (b *GPUClaimParametersApplyConfiguration) WithLabels(entries map[string]string) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithLabels(entries map[string]string) *GPURequirementsApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.Labels == nil && len(entries) > 0 {
 		b.Labels = make(map[string]string, len(entries))
@@ -159,7 +159,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithLabels(entries map[string]str
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Annotations field,
 // overwriting an existing map entries in Annotations field with the same key.
-func (b *GPUClaimParametersApplyConfiguration) WithAnnotations(entries map[string]string) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithAnnotations(entries map[string]string) *GPURequirementsApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.Annotations == nil && len(entries) > 0 {
 		b.Annotations = make(map[string]string, len(entries))
@@ -173,7 +173,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithAnnotations(entries map[strin
 // WithOwnerReferences adds the given value to the OwnerReferences field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the OwnerReferences field.
-func (b *GPUClaimParametersApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *GPURequirementsApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		if values[i] == nil {
@@ -187,7 +187,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithOwnerReferences(values ...*v1
 // WithFinalizers adds the given value to the Finalizers field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Finalizers field.
-func (b *GPUClaimParametersApplyConfiguration) WithFinalizers(values ...string) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithFinalizers(values ...string) *GPURequirementsApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		b.Finalizers = append(b.Finalizers, values[i])
@@ -195,7 +195,7 @@ func (b *GPUClaimParametersApplyConfiguration) WithFinalizers(values ...string) 
 	return b
 }
 
-func (b *GPUClaimParametersApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
+func (b *GPURequirementsApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
 	if b.ObjectMetaApplyConfiguration == nil {
 		b.ObjectMetaApplyConfiguration = &v1.ObjectMetaApplyConfiguration{}
 	}
@@ -204,7 +204,7 @@ func (b *GPUClaimParametersApplyConfiguration) ensureObjectMetaApplyConfiguratio
 // WithSpec sets the Spec field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Spec field is set to the value of the last call.
-func (b *GPUClaimParametersApplyConfiguration) WithSpec(value *GPUClaimParametersSpecApplyConfiguration) *GPUClaimParametersApplyConfiguration {
+func (b *GPURequirementsApplyConfiguration) WithSpec(value *GPURequirementsSpecApplyConfiguration) *GPURequirementsApplyConfiguration {
 	b.Spec = value
 	return b
 }

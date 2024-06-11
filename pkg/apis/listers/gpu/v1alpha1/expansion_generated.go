@@ -18,22 +18,22 @@ limitations under the License.
 
 package v1alpha1
 
-// GPUClaimParametersListerExpansion allows custom methods to be added to
-// GPUClaimParametersLister.
-type GPUClaimParametersListerExpansion interface{}
-
-// GPUClaimParametersNamespaceListerExpansion allows custom methods to be added to
-// GPUClaimParametersNamespaceLister.
-type GPUClaimParametersNamespaceListerExpansion interface{}
-
 // GPUClassParametersListerExpansion allows custom methods to be added to
 // GPUClassParametersLister.
 type GPUClassParametersListerExpansion interface{}
 
-// NodeDevicesListerExpansion allows custom methods to be added to
-// NodeDevicesLister.
-type NodeDevicesListerExpansion interface{}
+// GPURequirementsListerExpansion allows custom methods to be added to
+// GPURequirementsLister.
+type GPURequirementsListerExpansion interface{}
 
-// NodeDevicesNamespaceListerExpansion allows custom methods to be added to
-// NodeDevicesNamespaceLister.
-type NodeDevicesNamespaceListerExpansion interface{}
+// GPURequirementsNamespaceListerExpansion allows custom methods to be added to
+// GPURequirementsNamespaceLister.
+type GPURequirementsNamespaceListerExpansion interface{}
+
+// NodeGPUSlicesListerExpansion allows custom methods to be added to
+// NodeGPUSlicesLister.
+type NodeGPUSlicesListerExpansion interface{}
+
+// NodeGPUSlicesNamespaceListerExpansion allows custom methods to be added to
+// NodeGPUSlicesNamespaceLister.
+type NodeGPUSlicesNamespaceListerExpansion interface{}

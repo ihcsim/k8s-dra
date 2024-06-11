@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -10,11 +11,11 @@ import (
 // +k8s:openapi-gen=true
 // +kubebuilder:resource:scope=Namespaced
 
-// NodeDevices holds the spec of GPU devices on a node, and the devices'
+// NodeGPUSlices holds the spec of GPU devices on a node, and the devices'
 // allocation state. A GPU device can be in one of three states: allocatable,
 // allocated, or prepared.
 // The name of the object is the name of the node.
-type NodeDevices struct {
+type NodeGPUSlices struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
@@ -61,12 +62,12 @@ const (
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// NodeDevicesList represents a list of NodeDevices CRD objects.
-type NodeDevicesList struct {
+// NodeGPUSlicesList represents a list of NodeDevices CRD objects.
+type NodeGPUSlicesList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 
-	Items []NodeDevices `json:"items"`
+	Items []NodeGPUSlices `json:"items"`
 }
 
 // GPUDevice represents an allocatable GPU device on a node.
@@ -81,7 +82,8 @@ type GPUDevice struct {
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +k8s:openapi-gen=true
 
-// GPUClassParameters holds the set of parameters provided when creating a resource class for this driver.
+// GPUClassParameters defines pre-start and post-complete hooks fo
+// It can be referenced by a ResourceClass object.
 type GPUClassParameters struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -115,25 +117,27 @@ type GPUClassParametersList struct {
 // +k8s:openapi-gen=true
 // +kubebuilder:resource:scope=Namespaced
 
-// GPUClaimParameters holds the set of parameters provided when creating a resource claim for a GPU.
-type GPUClaimParameters struct {
+// GPURequirements is a set of requirement parameters that is referenced by a
+// ResourceClaim object.
+type GPURequirements struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec GPUClaimParametersSpec `json:"spec,omitempty"`
+	Spec GPURequirementsSpec `json:"spec,omitempty"`
 }
 
-// GPUClaimParametersSpec is the spec for the ResourceClaimParameters CRD.
-type GPUClaimParametersSpec struct {
-	Count int `json:"count,omitempty"`
+// GPURequirementsSpec is the spec for the GPURequirements CRD.
+type GPURequirementsSpec struct {
+	Count  int `json:"count,omitempty"`
+	Memory resource.Quantity
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// GPUClaimParametersList represents the "plural" of a ResourceClaimParameters CRD object.
-type GPUClaimParametersList struct {
+// GPURequirementsList represents the "plural" of a ResourceClaimParameters CRD object.
+type GPURequirementsList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 
-	Items []GPUClaimParameters `json:"items"`
+	Items []GPURequirements `json:"items"`
 }

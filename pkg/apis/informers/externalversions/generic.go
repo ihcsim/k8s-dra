@@ -53,12 +53,12 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=gpu, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("gpuclaimparameters"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Gpu().V1alpha1().GPUClaimParameters().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("gpuclassparameters"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Gpu().V1alpha1().GPUClassParameters().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("nodedevices"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Gpu().V1alpha1().NodeDevices().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("gpurequirements"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Gpu().V1alpha1().GPURequirements().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("nodegpuslices"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Gpu().V1alpha1().NodeGPUSlices().Informer()}, nil
 
 	}
 

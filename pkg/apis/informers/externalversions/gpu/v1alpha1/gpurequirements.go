@@ -32,59 +32,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// NodeDevicesInformer provides access to a shared informer and lister for
-// NodeDevices.
-type NodeDevicesInformer interface {
+// GPURequirementsInformer provides access to a shared informer and lister for
+// GPURequirements.
+type GPURequirementsInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1alpha1.NodeDevicesLister
+	Lister() v1alpha1.GPURequirementsLister
 }
 
-type nodeDevicesInformer struct {
+type gPURequirementsInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewNodeDevicesInformer constructs a new informer for NodeDevices type.
+// NewGPURequirementsInformer constructs a new informer for GPURequirements type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewNodeDevicesInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredNodeDevicesInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewGPURequirementsInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredGPURequirementsInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredNodeDevicesInformer constructs a new informer for NodeDevices type.
+// NewFilteredGPURequirementsInformer constructs a new informer for GPURequirements type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredNodeDevicesInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredGPURequirementsInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.GpuV1alpha1().NodeDevices(namespace).List(context.TODO(), options)
+				return client.GpuV1alpha1().GPURequirements(namespace).List(context.TODO(), options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.GpuV1alpha1().NodeDevices(namespace).Watch(context.TODO(), options)
+				return client.GpuV1alpha1().GPURequirements(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&gpuv1alpha1.NodeDevices{},
+		&gpuv1alpha1.GPURequirements{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *nodeDevicesInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredNodeDevicesInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *gPURequirementsInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredGPURequirementsInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *nodeDevicesInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&gpuv1alpha1.NodeDevices{}, f.defaultInformer)
+func (f *gPURequirementsInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&gpuv1alpha1.GPURequirements{}, f.defaultInformer)
 }
 
-func (f *nodeDevicesInformer) Lister() v1alpha1.NodeDevicesLister {
-	return v1alpha1.NewNodeDevicesLister(f.Informer().GetIndexer())
+func (f *gPURequirementsInformer) Lister() v1alpha1.GPURequirementsLister {
+	return v1alpha1.NewGPURequirementsLister(f.Informer().GetIndexer())
 }
